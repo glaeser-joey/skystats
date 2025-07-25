@@ -143,6 +143,7 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 			ad.last_seen_lat, 
 			ad.last_seen_lon, 
 			ad.last_seen_distance,
+			ad.destination_distance,
 			-- Registration data
 			reg.type,
 			reg.icao_type,
@@ -165,7 +166,8 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 			rt.destination_country_iso_name,
 			rt.destination_iata_code,
 			rt.destination_icao_code,
-			rt.destination_name
+			rt.destination_name,
+			rt.route_distance
 		FROM aircraft_data ad
 		LEFT JOIN registration_data reg ON ad.hex = reg.mode_s
 		LEFT JOIN route_data rt ON ad.flight = rt.route_callsign
@@ -187,6 +189,7 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 		var hex, flight, registration, aircraftType string
 		var firstSeen, lastSeen *time.Time
 		var track, lastSeenLat, lastSeenLon, lastSeenDistance float64
+		var destinationDistance *float64
 
 		// Registration data
 		var regType, icaoType, manufacturer, registeredOwnerCountryName, registeredOwnerCountryISO, registeredOwnerOperatorFlag, registeredOwner *string
@@ -195,11 +198,12 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 		// Route data
 		var airlineName, airlineICAO, originCountryName, originCountryISOName, originIATACode, originICAOCode, originName *string
 		var destinationCountryName, destinationCountryISOName, destinationIATACode, destinationICAOCode, destinationName *string
+		var routeDistance *float64
 
 		err := rows.Scan(
 			// Core data
 			&hex, &flight, &registration, &aircraftType, &track,
-			&firstSeen, &lastSeen, &lastSeenLat, &lastSeenLon, &lastSeenDistance,
+			&firstSeen, &lastSeen, &lastSeenLat, &lastSeenLon, &lastSeenDistance, &destinationDistance,
 
 			// Registration data
 			&regType, &icaoType, &manufacturer, &registeredOwnerCountryName, &registeredOwnerCountryISO,
@@ -208,7 +212,7 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 			// Route data
 			&airlineName, &airlineICAO, &originCountryName, &originCountryISOName, &originIATACode,
 			&originICAOCode, &originName, &destinationCountryName, &destinationCountryISOName,
-			&destinationIATACode, &destinationICAOCode, &destinationName)
+			&destinationIATACode, &destinationICAOCode, &destinationName, &routeDistance)
 		if err != nil {
 			fmt.Println("Error in getAboveStats() ", err)
 			continue
@@ -216,16 +220,17 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 
 		aircraft = append(aircraft, gin.H{
 			// Core data
-			"hex":                hex,
-			"flight":             flight,
-			"registration":       registration,
-			"type":               aircraftType,
-			"first_seen":         firstSeen,
-			"last_seen":          lastSeen,
-			"last_seen_lat":      lastSeenLat,
-			"last_seen_lon":      lastSeenLon,
-			"last_seen_distance": lastSeenDistance,
-			"track":              track,
+			"hex":                  hex,
+			"flight":               flight,
+			"registration":         registration,
+			"type":                 aircraftType,
+			"first_seen":           firstSeen,
+			"last_seen":            lastSeen,
+			"last_seen_lat":        lastSeenLat,
+			"last_seen_lon":        lastSeenLon,
+			"last_seen_distance":   lastSeenDistance,
+			"destination_distance": destinationDistance,
+			"track":                track,
 			// Registration data
 			"reg_type":                       regType,
 			"icao_type":                      icaoType,
@@ -249,6 +254,7 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 			"destination_iata_code":        destinationIATACode,
 			"destination_icao_code":        destinationICAOCode,
 			"destination_name":             destinationName,
+			"route_distance":               routeDistance,
 		})
 	}
 
