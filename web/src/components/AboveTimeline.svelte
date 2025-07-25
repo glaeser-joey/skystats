@@ -1,7 +1,7 @@
 <script>
     import { onMount, onDestroy } from "svelte";
     import NumberFlow from "@number-flow/svelte";
-    import { IconPlane } from "@tabler/icons-svelte";
+    import { IconPlane, IconPlaneDeparture, IconPlaneArrival } from "@tabler/icons-svelte";
 
     let endpoint = "api/stats/above";
 
@@ -62,10 +62,10 @@
             // else return;
 
             if (distance < 20) idealSlot = 0;
-            else if (distance < 40) idealSlot = 1;
-            else if (distance < 60) idealSlot = 2;
-            else if (distance < 80) idealSlot = 3;
-            else if (distance < 100) idealSlot = 4;
+            else if (distance < 80) idealSlot = 1;
+            else if (distance < 120) idealSlot = 2;
+            else if (distance < 160) idealSlot = 3;
+            else if (distance < 200) idealSlot = 4;
             else return;
 
             let placed = false;
@@ -259,21 +259,59 @@
 <div class="modal-box max-w-5xl">
         {#if selectedAircraft}
             <!--header-->
-            <div class="flex items-start gap-3">
+            <div class="flex items-start gap-3 justify-between">
+                <div class="flex items-start gap-3">
                     {#if selectedAircraft.airline_icao}
-                    <div class="bg-base-200 p-2 rounded-lg">
-                        <img src="https://doj0yisjozhv1.cloudfront.net/square-logos/{selectedAircraft.airline_icao}.png" width="40" height="40" alt="{selectedAircraft.airline_icao}">
+                        <div class="bg-base-200 p-2 rounded-lg">
+                            <img src="https://doj0yisjozhv1.cloudfront.net/square-logos/{selectedAircraft.airline_icao}.png" width="40" height="40" alt="{selectedAircraft.airline_icao}">
+                        </div>
+                    {/if}
+                    <div>
+                        <h3 class="text-lg font-bold">{selectedAircraft.registration || 'Unknown'}</h3>
+                        <p class="text-sm uppercase tracking-wider font-mono">{selectedAircraft.hex || ''}</p>
                     </div>
-                {/if}
-                <div>
-                    <h3 class="text-lg font-bold">{selectedAircraft.registration || 'Unknown'}</h3>
-                    <p class="text-sm uppercase tracking-wider font-mono">{selectedAircraft.hex || ''}</p>
                 </div>
+
+                <!-- plane progress -->
+                <ul class="timeline timeline-horizontal flex-1 ml-8 -mt-6 -mr-10">
+                <li>
+                    <div class="timeline-start"></div>
+                    <!-- <div class="timeline-middle badge badge-accent uppercase font-bold tracking-wider text-white text-[8px] sm:text-xs">
+                        {selectedAircraft.origin_iata_code}
+                    </div> -->
+                    <div class="timeline-middle text-xl text-info font-thin text-accent font-mono">
+                        {selectedAircraft.origin_iata_code}
+                    </div>
+                    <div class="timeline-end">
+                        <div class="text-base fi fi-{selectedAircraft.origin_country_iso_name.toLowerCase()}"></div>
+                    </div>
+                    <hr />
+                </li>   
+                <li>
+                    <hr />
+                    <div class="timeline-start"></div>
+                    <div class="timeline-middle">
+                        <IconPlane size={24} />
+                    </div>
+                    <div class="timeline-end"></div>
+                    <hr />
+                </li>
+                <li>
+                    <hr />
+                    <div class="timeline-start"></div>
+                    <div class="timeline-middle text-xl text-info font-thin text-accent font-mono">
+                        {selectedAircraft.destination_iata_code}
+                    </div>
+                    <div class="timeline-end">
+                        <div class="text-base fi fi-{selectedAircraft.destination_country_iso_name.toLowerCase()}"></div>
+                    </div>
+                </li>
+            </ul>
+            <!-- end plane progress -->
             </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6 gap-6">
-                
                 <!--image-->
-                <!-- <div class="md:mr-4 lg:mr-8"> -->
                 <div class="mt-6 mr-8">
                     {#if selectedAircraft.url_photo}
                         {#if imageLoading}
