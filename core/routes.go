@@ -67,10 +67,8 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 	for _, route := range routes {
 
 		var distance *float64
-		if route.Response.Flightroute.Origin.Latitude != 0 &&
-			route.Response.Flightroute.Origin.Longitude != 0 &&
-			route.Response.Flightroute.Destination.Latitude != 0 &&
-			route.Response.Flightroute.Destination.Longitude != 0 {
+		if route.Response.Flightroute.Origin.IcaoCode != "" &&
+			route.Response.Flightroute.Destination.IcaoCode != "" {
 			distance = getDistanceBetweenAirports([]float64{route.Response.Flightroute.Origin.Longitude,
 				route.Response.Flightroute.Origin.Latitude},
 				[]float64{route.Response.Flightroute.Destination.Longitude,
