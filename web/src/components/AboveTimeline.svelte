@@ -11,6 +11,7 @@
     let error = null;
     let interval = null;
     let selectedAircraft = null;
+    let selectedAircraftHex = null;
     let imageLoading = false;
 
     async function fetchData() {
@@ -114,15 +115,45 @@
 
     $: slottedData = getSlottedAircraft(data);
 
+    function calculateProgress(aircraft) {
+        if (!aircraft || !aircraft.route_distance || !aircraft.destination_distance) {
+            return aircraft;
+        }
+        
+        const totalDistance = parseFloat(aircraft.route_distance);
+        const remainingDistance = parseFloat(aircraft.destination_distance);
+        const traveledDistance = totalDistance - remainingDistance;
+        const progressPercent = Math.max(0, Math.min(100, (traveledDistance / totalDistance) * 100));
+        
+        return {
+            ...aircraft,
+            totalDistance: totalDistance.toFixed(1),
+            remainingDistance: remainingDistance.toFixed(1),
+            traveledDistance: traveledDistance.toFixed(1),
+            progressPercent: progressPercent.toFixed(1)
+        };
+    }
+
+    $: if (selectedAircraftHex && data.length > 0) {
+        const updatedAircraft = data.find(a => a.hex === selectedAircraftHex);
+        if (updatedAircraft) {
+            selectedAircraft = calculateProgress(updatedAircraft);
+        }
+    }
+
     function showAircraftModal(aircraft) {
-        selectedAircraft = aircraft;
+        selectedAircraftHex = aircraft.hex;
+        selectedAircraft = calculateProgress(aircraft);
         imageLoading = true;
+        
         // @ts-ignore
         document.getElementById("aircraft-modal").showModal()
+        
     }
 
     function closeModal() {
         selectedAircraft = null;
+        selectedAircraftHex = null;
     }
 </script>
 
@@ -256,10 +287,12 @@
 </div>
 
 <dialog id="aircraft-modal" class="modal" on:close={closeModal}>
-<div class="modal-box max-w-5xl">
+<div class="modal-box max-w-5xl relative">
+        <form method="dialog" class="absolute right-2 top-2">
+            <button class="btn btn-md btn-circle btn-ghost text-2xl">✕</button>
+        </form>
         {#if selectedAircraft}
-            <!--header-->
-            <div class="flex items-start gap-3 justify-between">
+            <div id="header">
                 <div class="flex items-start gap-3">
                     {#if selectedAircraft.airline_icao}
                         <div class="bg-base-200 p-2 rounded-lg">
@@ -267,52 +300,32 @@
                         </div>
                     {/if}
                     <div>
-                        <h3 class="text-lg font-bold">{selectedAircraft.registration || 'Unknown'}</h3>
+                        <h3 class="text-lg font-bold">{selectedAircraft.registration || 'Unknown'} - {selectedAircraft.flight}</h3>
                         <p class="text-sm uppercase tracking-wider font-mono">{selectedAircraft.hex || ''}</p>
                     </div>
                 </div>
-
-                <!-- plane progress -->
-                <ul class="timeline timeline-horizontal flex-1 ml-8 -mt-6 -mr-10">
-                <li>
-                    <div class="timeline-start"></div>
-                    <!-- <div class="timeline-middle badge badge-accent uppercase font-bold tracking-wider text-white text-[8px] sm:text-xs">
-                        {selectedAircraft.origin_iata_code}
-                    </div> -->
-                    <div class="timeline-middle text-xl text-info font-thin text-accent font-mono">
+            </div>
+            <div id=progress>
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="text-xl text-info font-thin text-accent font-mono">
                         {selectedAircraft.origin_iata_code}
                     </div>
-                    <div class="timeline-end">
-                        <div class="text-base fi fi-{selectedAircraft.origin_country_iso_name.toLowerCase()}"></div>
+                    <div class="progress-container flex-1">
+                        <hr class="progress-hr">
+                        <div class="progress-marker text-secondary" style="left: {selectedAircraft.progressPercent}%">
+                        <IconPlane size={24} stroke="2" class="fill-base-100"/>
+                        </div>
                     </div>
-                    <hr />
-                </li>   
-                <li>
-                    <hr />
-                    <div class="timeline-start"></div>
-                    <div class="timeline-middle">
-                        <IconPlane size={24} />
-                    </div>
-                    <div class="timeline-end"></div>
-                    <hr />
-                </li>
-                <li>
-                    <hr />
-                    <div class="timeline-start"></div>
-                    <div class="timeline-middle text-xl text-info font-thin text-accent font-mono">
+                    <div class="text-xl text-info font-thin text-accent font-mono">
                         {selectedAircraft.destination_iata_code}
                     </div>
-                    <div class="timeline-end">
-                        <div class="text-base fi fi-{selectedAircraft.destination_country_iso_name.toLowerCase()}"></div>
-                    </div>
-                </li>
-            </ul>
-            <!-- end plane progress -->
+                </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6 gap-6">
+            <div class="text-right text-xs italic">{selectedAircraft.remainingDistance}km remaining<br>
+                (estimated)</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 mt-6 gap-6">
                 <!--image-->
-                <div class="mt-6 mr-8">
+                <div class="mr-8">
                     {#if selectedAircraft.url_photo}
                         {#if imageLoading}
                             <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
@@ -330,57 +343,44 @@
                             <p class="text-center text-sm text-gray-500">No photo available</p>
                         </div>
                     {/if}
-                    {#if selectedAircraft.icao_type}
-                        <p class="text-sm mt-4 font-bold">{selectedAircraft.icao_type}</p>
-                        <p class="text-sm text-gray-500 italic">{selectedAircraft.reg_type}</p>
-                    {/if}  
-                </div>
-                <!-- reg info -->
-                <div>
-                    <p class="font-semibold uppercase tracking-wider">Registration</p>
+
+                    {#if selectedAircraft.manufacturer && selectedAircraft.icao_type}
+                        <p class="text-sm mt-2 uppercase font-semibold">{selectedAircraft.manufacturer} {selectedAircraft.icao_type}</p>
+                    {:else if selectedAircraft.icao_type}
+                        <p class="text-sm mt-2 uppercase font-semibold">{selectedAircraft.icao_type}</p>
+                    {/if}
                     {#if selectedAircraft.reg_type}
-                        <p>icao_type: {selectedAircraft.icao_type}</p>
-                        <p>manufacturer: {selectedAircraft.manufacturer}</p>
-                        <p>registered_owner_country_name: {selectedAircraft.registered_owner_country_name}</p>
-                        <p>registered_owner_country_iso: {selectedAircraft.registered_owner_country_iso}</p>
-                        <p>registered_owner_operator_flag: {selectedAircraft.registered_owner_operator_flag}</p>
-                        <p>registered_owner: {selectedAircraft.registered_owner}</p>
-                    {:else}
-                        <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
-                            <p class="text-center text-sm text-gray-500">No registration data available</p>
-                        </div>
+                        <p class="text-sm text-gray-500">{selectedAircraft.reg_type}</p>
                     {/if}
                 </div>
-                <!-- route info -->
-                <div>
-                    <p class="font-semibold uppercase tracking-wider">Route</p>
-                    {#if selectedAircraft.origin_country_iso_name}
-                        <p>airline_name: {selectedAircraft.airline_name}</p>
-                        <p>airline_icao: {selectedAircraft.airline_icao}</p>
-                        <p>origin_country_name: {selectedAircraft.origin_country_name}</p>
-                        <p>origin_country_iso_name: {selectedAircraft.origin_country_iso_name}</p>
-                        <p>origin_iata_code: {selectedAircraft.origin_iata_code}</p>
-                        <p>origin_icao_code: {selectedAircraft.origin_icao_code}</p>
-                        <p>origin_name: {selectedAircraft.origin_name}</p>
-                        <p>destination_country_name: {selectedAircraft.destination_country_name}</p>
-                        <p>destination_country_iso_name: {selectedAircraft.destination_country_iso_name}</p>
-                        <p>destination_iata_code: {selectedAircraft.destination_iata_code}</p>
-                        <p>destination_icao_code: {selectedAircraft.destination_icao_code}</p>
-                        <p>destination_name: {selectedAircraft.destination_name}    </p>
-                    
-                    {:else}
-                        <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
-                            <p class="text-center text-sm text-gray-500">No route data available</p>
-                        </div>
-                    {/if}
-                </div>
+                {#if selectedAircraft.origin_country_iso_name}
+                    <div>
+                        <p class="font-bold uppercase tracking-wider">Route</p>
+                            <div class="flex items-center gap-3 mt-3">
+                                <IconPlaneDeparture size={24} />
+                                <p><span class="text-sm fi fi-{selectedAircraft.origin_country_iso_name.toLowerCase()}"></span> {selectedAircraft.origin_name}, {selectedAircraft.origin_country_name}</p>
+                            </div>
+                            <div class="flex items-center mt-4 gap-3">
+                                <IconPlaneArrival size={24} />
+                                <p><span class="text-sm fi fi-{selectedAircraft.destination_country_iso_name.toLowerCase()}"></span> {selectedAircraft.destination_name}, {selectedAircraft.destination_country_name}</p>
+                            </div>
+                            <br/>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+                                <div>
+                                <p class="font-bold uppercase tracking-wider">Progress</p>
+                                    <p class="mt-2"><span class="font-semibold">From Origin:</span> {selectedAircraft.traveledDistance}km</p>
+                                    <p><span class="font-semibold">To Destination:</span> {selectedAircraft.remainingDistance}km</p>
+                                </div>
+                                <div class="radial-progress bg-base-300" style="--value:{selectedAircraft.progressPercent}" aria-valuenow={selectedAircraft.progressPercent} role="progressbar">{selectedAircraft.progressPercent}%</div>
+                            </div>
+                    </div>
+                {:else}
+                    <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
+                        <p class="text-center text-sm text-gray-500">No route data available</p>
+                    </div>
+                {/if}
             </div>
         {/if}
-        <div class="modal-action">
-            <form method="dialog">
-                <button class="btn">Close</button>
-            </form>
-        </div>
     </div> 
     <form method="dialog" class="modal-backdrop">
         <button>close</button>
@@ -398,5 +398,27 @@
 
     .timeline-horizontal hr {
         width: 100%;
+    }
+
+    .progress-container {
+        position: relative;
+        width: 100%;
+        margin: 0;
+    }
+    
+    .progress-hr {
+        margin: 0;
+        border: none;
+        height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+    }
+    
+    .progress-marker {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        transition: left 0.3s ease-out;
+        z-index: 10;
     }
 </style>
