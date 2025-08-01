@@ -68,6 +68,8 @@ func (s *APIServer) Start() {
 			stats.GET("/interesting/military", s.getMilitaryAircraft)
 			stats.GET("/interesting/government", s.getGovernmentAircraft)
 
+			stats.GET("/types/top", s.getTopAircraftTypes)
+
 		}
 	}
 
@@ -547,6 +549,54 @@ func (s *APIServer) getLowestAircraft(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, aircraft)
+}
+
+func (s *APIServer) getTopAircraftTypes(c *gin.Context) {
+
+	query := `SELECT 
+					t,
+					count,
+					ROUND(count * 100.0 / SUM(count) OVER(), 0) as percentage
+				FROM (
+					SELECT t, Count(t) as count
+					FROM aircraft_data 
+					GROUP BY t 
+					ORDER BY Count(t) DESC 
+					LIMIT 10
+				) top_10
+				ORDER BY count DESC`
+
+	rows, err := s.pg.db.Query(context.Background(), query)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer rows.Close()
+
+	aircraft := []gin.H{}
+
+	for rows.Next() {
+		var aircraft_type string
+		var count int
+		var percentage float64
+
+		err := rows.Scan(&aircraft_type, &count, &percentage)
+
+		if err != nil {
+			continue
+		}
+
+		aircraft = append(aircraft, gin.H{
+			"aircraft_type": aircraft_type,
+			"count":         count,
+			"percentage":    percentage,
+		})
+	}
+
+	c.JSON(http.StatusOK, aircraft)
+
 }
 
 func (s *APIServer) getTopRoutes(c *gin.Context) {

@@ -18,6 +18,7 @@
   import RouteTopAirportsInternational from './components/RouteTopAirportsInternational.svelte';
   import RouteTopAirportsDomestic from './components/RouteTopAirportsDomestic.svelte';
   import RouteTopRoutes from './components/RouteTopRoutes.svelte';
+  import TypesTop from './components/TypesTop.svelte';
 </script>
 
 
@@ -42,6 +43,7 @@
     <RouteTopRoutes />
     <RouteTopCountriesOrigin />
     <RouteTopCountriesDestination />
+    <TypesTop />
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 mt-10 gap-6">
     <InterestingMilAircraft />
