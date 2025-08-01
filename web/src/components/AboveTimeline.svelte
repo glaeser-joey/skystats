@@ -157,8 +157,6 @@
     }
 </script>
 
-<!-- <div class="card bg-base-100 mb-4 w96 shadow-sm rounded-xl hover:shadow-md transition-all duration-200"> -->
-<!-- <div class="card-body"> -->
 <div class="w-full">
     {#if loading}
         <div class="flex justify-center py-8">
@@ -375,7 +373,7 @@
                             </div>
                     </div>
                 {:else}
-                    <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
+                    <div class="bg-base-200 mb-10 w-full max-w-sm flex items-center justify-center rounded-lg">
                         <p class="text-center text-sm text-gray-500">No route data available</p>
                     </div>
                 {/if}

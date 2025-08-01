@@ -35,7 +35,7 @@
   <div class="grid grid-cols-1 mt-10 gap-6">
     <AboveTimeline />
   </div>
-  <div class="grid grid-cols-3 mt-10 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 mt-10 gap-6">
     <RouteTopAirlines />
     <RouteTopAirportsDomestic  />
     <RouteTopAirportsInternational />
@@ -43,13 +43,13 @@
     <RouteTopCountriesOrigin />
     <RouteTopCountriesDestination />
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 mt-10 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 mt-10 gap-6">
     <InterestingMilAircraft />
     <InterestingGovAircraft />
     <InterestingPolAircraft />
     <InterestingCivAircraft />
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 mt-10 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 mt-10 gap-6">
     <MotionFastestAircraft />
     <MotionSlowestAircraft />
     <MotionHighestAircraft /> 
