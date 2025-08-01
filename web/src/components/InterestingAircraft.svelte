@@ -55,7 +55,6 @@
 
 </script>
 
-<!-- <div class="card bg-base-100 w96 shadow-sm rounded-xl border border-secondary hover:shadow-md transition-all duration-200"> -->
 <div>
 <h1 class="card-title mb-4 flex items-center gap-2">
     {#if icon}
@@ -67,7 +66,6 @@
 </h1>
 <div class="card bg-base-100 mb-4 w96 shadow-sm rounded hover:shadow-md transition-all duration-200">
     <div class="card-body">
-        <!-- <div class="divider mt-1 mb-1 -mx-6"></div> -->
         <div class="overflow-x-auto">
             {#if loading}
                 <div class="flex justify-center py-8">
@@ -88,22 +86,17 @@
                     <thead class="uppercase tracking-wider">
                         <tr>
                             <th>Reg</th>
-                            <!-- <th>Flight</th> -->
                             <th>Operator</th>
                             <th>Type</th>
-                            <!-- <th>Category</th> -->
-                            <!-- <th>Tags</th> -->
                             <th>Last Seen</th>
                         </tr>
                     </thead>
                     <tbody>
                         {#each data as aircraft}
                         <tr class="hover:bg-base-300 cursor-pointer" on:click={() => showAircraftModal(aircraft)}>
-                            <td>{aircraft.registration}</td>
-                            <!-- <td>{aircraft.flight || '-'}</td> -->
+                            <td class="font-mono">{aircraft.registration}</td>
                             <td>{aircraft.operator}</td>
                             <td>{aircraft.type}</td>
-                            <!-- <td>{aircraft.category}</td> -->
                             <td>{aircraft.seen ? new Date(aircraft.seen).toLocaleString() : '-'}</td>
                         </tr>
                         {/each}
