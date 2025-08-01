@@ -57,9 +57,9 @@
     {#each data as type, index}
     <li class="list-row">
         <!-- <div class="text-4xl font-thin text-primary opacity-80 font-mono">{type.aircraft_type}</div> -->
-        <div class="badge badge-accent badge-soft badge-outline badge-xl rounded-md">
+        <a href="https://skybrary.aero/aircraft/{type.aircraft_type}" target="_blank" rel="noopener noreferrer" class="badge badge-accent badge-soft badge-outline badge-xl rounded-md hover:badge-accent">
             <span class="text-lg font-mono font-semibold uppercase tracking-wider">{type.aircraft_type}</span>
-        </div>
+        </a>
 
         <div class="list-col-grow">
             <progress class="progress progress-accent w-65" value="{type.percentage}" max="100"></progress>
