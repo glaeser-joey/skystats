@@ -160,7 +160,7 @@
 <div class="w-full">
     {#if loading}
         <div class="flex justify-center py-8">
-            <span class="loading loading-spinner loading-lg"></span>
+            <span class="loading loading-ring loading-lg"></span>
         </div>
     {:else if error}
         <div class="flex alert alert-error">
