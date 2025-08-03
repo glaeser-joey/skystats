@@ -2,6 +2,7 @@
     import { onMount, onDestroy } from "svelte";
     import NumberFlow from "@number-flow/svelte";
     import { IconPlane, IconPlaneDeparture, IconPlaneArrival } from "@tabler/icons-svelte";
+    import Status from "./Status.svelte";
 
     let endpoint = "api/stats/above";
 
@@ -55,19 +56,19 @@
             const distance = parseFloat(aircraft.last_seen_distance);
             let idealSlot;
 
-            // if (distance < 4) idealSlot = 0;
-            // else if (distance < 8) idealSlot = 1;
-            // else if (distance < 12) idealSlot = 2;
-            // else if (distance < 16) idealSlot = 3;
-            // else if (distance < 20) idealSlot = 4;
-            // else return;
-
-            if (distance < 20) idealSlot = 0;
-            else if (distance < 80) idealSlot = 1;
-            else if (distance < 120) idealSlot = 2;
-            else if (distance < 160) idealSlot = 3;
-            else if (distance < 200) idealSlot = 4;
+            if (distance < 4) idealSlot = 0;
+            else if (distance < 8) idealSlot = 1;
+            else if (distance < 12) idealSlot = 2;
+            else if (distance < 16) idealSlot = 3;
+            else if (distance < 20) idealSlot = 4;
             else return;
+
+            // if (distance < 20) idealSlot = 0;
+            // else if (distance < 80) idealSlot = 1;
+            // else if (distance < 120) idealSlot = 2;
+            // else if (distance < 160) idealSlot = 3;
+            // else if (distance < 200) idealSlot = 4;
+            // else return;
 
             let placed = false;
 
@@ -199,7 +200,9 @@
                         />
                     </svg>
                 </div>
-                <div class="timeline-end"></div>
+                <div class="timeline-end">
+                    <Status />
+                </div>
                 <hr />
             </li>
             <!-- End Home-->
@@ -210,7 +213,7 @@
                         <div class="timeline-start mb-5">
                             <button type="button"
                                     class="cursor-pointer
-                                        badge badge-accent 
+                                        badge badge-accent rounded-sm
                                         uppercase font-bold tracking-wider text-white text-[8px] sm:text-xs"
                                     on:click={() => showAircraftModal(aircraft)}>
                                 {aircraft.registration || aircraft.hex}
