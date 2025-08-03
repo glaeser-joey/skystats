@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
-    import { IconPlaneTilt, IconCalendar, IconClock, IconCategoryPlus } from '@tabler/icons-svelte';
+    import { IconPlaneTilt, IconCalendar, IconClock, IconRoute, IconWorld, IconBuildingAirport } from '@tabler/icons-svelte';
     import NumberFlow from '@number-flow/svelte'
 
 
@@ -54,6 +54,8 @@
         <span>No data available</span>
     </div>
 {:else}
+    <!-- Aircraft Seen Stats -->
+     <div class="flex justify-center gap-10">
     <div class="stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
         <div class="stat">
             <div class="stat-figure">
@@ -85,6 +87,42 @@
             <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_aircraft} /></div>
             <div class="stat-desc">all time</div>
         </div>
+    </div>
+
+    <!-- Route stats -->
+    
+    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
+        <div class="stat">
+            <div class="stat-figure">
+                <div class="icon icon-tabler icons-tabler-outline">
+                    <IconRoute stroke={2}/>
+                </div>
+            </div>
+            <div class="stat-title">Aircrafts with routes</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_routes} /></div>
+            <div class="stat-desc">all time</div>
+        </div>
+        <div class="stat">
+            <div class="stat-figure">
+                <div class="icon icon-tabler icons-tabler-outline">
+                    <IconWorld stroke={2}/>
+                </div>
+            </div>
+            <div class="stat-title">Unique Countries</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.unqiue_countries} /></div>
+            <div class="stat-desc">all time</div>
+        </div>
+        <div class="stat">
+            <div class="stat-figure">
+                <div class="icon icon-tabler icons-tabler-outline">
+                    <IconBuildingAirport stroke={2}/>
+                </div>
+            </div>
+            <div class="stat-title">Unique Airports</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.unique_airports} /></div>
+            <div class="stat-desc">all time</div>
+        </div>
+    </div>
     </div>
 {/if}
 </div>

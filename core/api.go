@@ -106,20 +106,75 @@ func (s *APIServer) getGeneralStats(c *gin.Context) {
 		stats["hour_aircraft"] = hourAircraft
 	}
 
-	// Unique aircraft types
-	var uniqueTypes int
+	// Total Routes
+	var total_routes int
 	err = s.pg.db.QueryRow(context.Background(),
-		"SELECT COUNT(DISTINCT t) FROM aircraft_data WHERE t IS NOT NULL AND t != ''").Scan(&uniqueTypes)
+		`SELECT COUNT(*)
+			FROM aircraft_data a
+			INNER JOIN route_data r ON a.flight = r.route_callsign`).Scan(&total_routes)
+
 	if err == nil {
-		stats["unique_aircraft_types"] = uniqueTypes
+		stats["total_routes"] = total_routes
 	}
 
-	// Interesting aircraft count
-	var interestingCount int
-	err = s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft_seen").Scan(&interestingCount)
+	// Unique countries
+	var uniqueCountries int
+	err = s.pg.db.QueryRow(context.Background(),
+		`SELECT COUNT(*) 
+		FROM (
+			SELECT origin_country_name AS country FROM route_data
+			UNION 
+			SELECT destination_country_name AS country FROM route_data
+		) AS unique_countries`).Scan(&uniqueCountries)
+
 	if err == nil {
-		stats["interesting_aircraft_count"] = interestingCount
+		stats["unqiue_countries"] = uniqueCountries
 	}
+
+	// Unique airports
+	var uniqueAirports int
+	err = s.pg.db.QueryRow(context.Background(),
+		`SELECT COUNT(*) 
+		FROM (
+			SELECT origin_icao_code AS airport FROM route_data
+			UNION 
+			SELECT destination_icao_code AS airport FROM route_data
+		) AS unique_airports`).Scan(&uniqueAirports)
+
+	if err == nil {
+		stats["unique_airports"] = uniqueAirports
+	}
+
+	// // Unique aircraft types
+	// var uniqueTypes int
+	// err = s.pg.db.QueryRow(context.Background(),
+	// 	"SELECT COUNT(DISTINCT t) FROM aircraft_data WHERE t IS NOT NULL AND t != ''").Scan(&uniqueTypes)
+	// if err == nil {
+	// 	stats["unique_aircraft_types"] = uniqueTypes
+	// }
+
+	// // Interesting aircraft count
+	// var interestingCount int
+	// err = s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft_seen").Scan(&interestingCount)
+	// if err == nil {
+	// 	stats["total_interesting"] = interestingCount
+	// }
+
+	// // Today's interesting aircraft count
+	// var todayInterestingCount int
+	// err = s.pg.db.QueryRow(context.Background(),
+	// 	"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayInterestingCount)
+	// if err == nil {
+	// 	stats["today_interesting"] = todayInterestingCount
+	// }
+
+	// // Past hour interesting aircraft count
+	// var hourInterestingCount int
+	// err = s.pg.db.QueryRow(context.Background(),
+	// 	"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE first_seen >= NOW() - INTERVAL '1 hour'").Scan(&hourInterestingCount)
+	// if err == nil {
+	// 	stats["hour_interesting"] = hourInterestingCount
+	// }
 
 	c.JSON(http.StatusOK, stats)
 }
