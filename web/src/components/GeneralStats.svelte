@@ -98,7 +98,7 @@
                     <IconRoute stroke={2}/>
                 </div>
             </div>
-            <div class="stat-title">Aircrafts with routes</div>
+            <div class="stat-title">Aircraft with routes</div>
             <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_routes} /></div>
             <div class="stat-desc">all time</div>
         </div>
