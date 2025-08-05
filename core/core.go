@@ -60,8 +60,8 @@ func main() {
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
 	updateStatisticsTicker := time.NewTicker(120 * time.Second)
-	updateRegistrationsTicker := time.NewTicker(60 * time.Second)
-	updateRoutesTicker := time.NewTicker(60 * time.Second)
+	updateRegistrationsTicker := time.NewTicker(30 * time.Second)
+	updateRoutesTicker := time.NewTicker(30 * time.Second)
 	updateInterestingSeenTicker := time.NewTicker(120 * time.Second)
 
 	defer func() {

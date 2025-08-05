@@ -7,9 +7,15 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
+
+func getDistanceBetweenAirports(origin []float64, destination []float64) *float64 {
+	distance := getRuler().Distance(origin, destination)
+	return &distance
+}
 
 func updateRoutes(pg *postgres) {
 
@@ -56,7 +62,19 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 
 	batch := &pgx.Batch{}
 
+	last_updated := time.Now().UTC().Format("2006-01-02 15:04:05-07")
+
 	for _, route := range routes {
+
+		var distance *float64
+		if route.Response.Flightroute.Origin.IcaoCode != "" &&
+			route.Response.Flightroute.Destination.IcaoCode != "" {
+			distance = getDistanceBetweenAirports([]float64{route.Response.Flightroute.Origin.Longitude,
+				route.Response.Flightroute.Origin.Latitude},
+				[]float64{route.Response.Flightroute.Destination.Longitude,
+					route.Response.Flightroute.Destination.Latitude})
+		}
+
 		insertStatement := `
 			INSERT INTO route_data (
 				route_callsign,
@@ -85,10 +103,12 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 				destination_latitude,
 				destination_longitude,
 				destination_municipality,
-				destination_name)
+				destination_name,
+				last_updated,
+				route_distance)
 			VALUES ( 
-				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 
-				$15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+				$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
 			ON CONFLICT (route_callsign)
 			DO UPDATE SET
 				route_callsign = EXCLUDED.route_callsign,
@@ -117,7 +137,9 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 				destination_latitude = EXCLUDED.destination_latitude,
 				destination_longitude = EXCLUDED.destination_longitude,
 				destination_municipality = EXCLUDED.destination_municipality,
-				destination_name = EXCLUDED.destination_name`
+				destination_name = EXCLUDED.destination_name,
+				last_updated = EXCLUDED.last_updated,
+				route_distance = EXCLUDED.route_distance`
 
 		batch.Queue(insertStatement,
 			route.Response.Flightroute.Callsign,
@@ -146,13 +168,15 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 			route.Response.Flightroute.Destination.Latitude,
 			route.Response.Flightroute.Destination.Longitude,
 			route.Response.Flightroute.Destination.Municipality,
-			route.Response.Flightroute.Destination.Name)
+			route.Response.Flightroute.Destination.Name,
+			last_updated,
+			distance)
 	}
 
 	br := pg.db.SendBatch(context.Background(), batch)
 	defer br.Close()
 
-	for i := 0; i < len(routes); i++ {
+	for range routes {
 		_, err := br.Exec()
 		if err != nil {
 			fmt.Println("insertRoutes() - Unable to insert data: ", err)
@@ -197,7 +221,9 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 	query := `
 		SELECT id, route_callsign
 		FROM route_data
-		WHERE route_callsign = ANY($1::text[])`
+		WHERE route_callsign = ANY($1::text[])
+		  AND last_updated IS NOT NULL
+		  AND last_updated > NOW() - INTERVAL '1 month'`
 
 	rows, err := pg.db.Query(context.Background(), query, callsignValues)
 

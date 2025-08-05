@@ -4,28 +4,37 @@
 </br>
 <div align="center">
     SkyStats is an application to retrieve, store, and display interesting aircraft ADS-B data received via an SDR.
-    <br/><br/>
-    ⚠️ Currently pre-alpha, under active development, with things getting changed frequently.
-
 </div>
-
 
 ## Overview
 
-* Written in Go, using a Postgres database, and a basic html/js website
+* [Go](https://go.dev/) app with [PostgreSQL](https://www.postgresql.org/) database and [Svelte](https://svelte.dev/) + [DaisyUI](https://daisyui.com/) front end
 * ADS-B data is received via [adsb-ultrafeeder](https://github.com/sdr-enthusiasts/docker-adsb-ultrafeeder) / [readsb](https://github.com/wiedehopf/readsb), running on a Raspberry Pi 4 attached to an SDR + aerial ([see it here!](docs/setup/aerial.jpg))
-* The application reads raw aircraft data from the readsb [aircraft.json](https://github.com/wiedehopf/readsb-githist/blob/dev/README-json.md) file
-* Flight data is stored in a postgres database
-* Registration & Routing data is retrieved from the [adsbdb](https://github.com/mrjackwills/adsbdb) API
-* "Interesting" aircraft are identified via a local copy of the [plane-alert-db](https://github.com/sdr-enthusiasts/plane-alert-db)
-* Various other statistics are (fastest, slowest, highest, lowest) are calculated and stored. Note: This data needs cleansing, as it turns out even the ADS-B world is subject to bad data - with planes reguarly reporting impossible altitudes or speeds.
+* The application consumes aircraft data from the readsb [aircraft.json](https://github.com/wiedehopf/readsb-githist/blob/dev/README-json.md) file
 * A [gin](https://gin-gonic.com/) API surfaces information from the postgres database to the web frontend
-* POC UI seen in screenshots built with vanilla html/js - [Claude Code](https://www.anthropic.com/claude-code) was used liberally!
-* **Currently rebuilding the UI "properly" - progress in the [`svelte-ui`](https://github.com/tomcarman/skystats/tree/feature/svelte-ui) branch.**
+* Registration & routing data is retrieved from the [adsb-db](https://github.com/mrjackwills/adsbdb) API
+* "Interesting" aircraft are identified via a local copy of the [plane-alert-db](https://github.com/sdr-enthusiasts/plane-alert-db)
+
+## Features
+* "Above Me" - live view of 5 nearest aircraft with routing information
+* Total aircraft seen (past hour, day, all time)
+* Total aircraft with route data
+* Unique Countries
+* Unique Airports
+* Top Airlines
+* Top Airports (Domestic, International)
+* Top Countries (Origin, Destination)
+* Top Routes
+* Interesting Aircraft (Miiltary, Government, Police, Civilian)
+* Fastest Aircraft
+* Slowest Aircraft
+* Highest Aircraft
+* Lowest Aircraft
+
+## Setup
 
 There are environment variables (`LATITUDE`, `LONGITUDE`, `RADIUS`) that can be used to only process aircraft data that falls within a particular boundary - similar to [planefence](https://github.com/sdr-enthusiasts/docker-planefence). Alternatively, setting the `RADIUS` to something larger than that of your SDR will mean all aircraft data is processed.
 
-## Setup
 
 ### Running locally (eg. to develop)
 * Clone this repository
@@ -62,12 +71,23 @@ Either set in `.env` for local development, or `docker-compose.yml` when running
 
 ## Screenshots
 
-![General](docs/screenshots/General2.png)
+### Home
+![Home](docs/screenshots/1_Home.png)
 </br>
-![MilGov](docs/screenshots/MilGov.png)
+![AboveMeModal](docs/screenshots/2_AboveMeModal.png)
 </br>
-![PolCiv](docs/screenshots/PolCiv.png)
+
+### Route Stats
+![RouteStats](docs/screenshots/3_RouteStats.png)
 </br>
-![Overlay](docs/screenshots/Overlay.png)
+
+### Interesting Aircraft
+![InterestingSeen](docs/screenshots/4_InterestingStats.png)
 </br>
-![Stats](docs/screenshots/Stats.png)
+![InterestingModal](docs/screenshots/5_InterestingModal.png)
+</br>
+
+### Motion Stats
+![MotionStats](docs/screenshots/6_MotionStats.png)
+
+

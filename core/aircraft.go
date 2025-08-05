@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -26,13 +28,13 @@ func updateAircraftDatabase(pg *postgres) {
 
 	response.TrimFlightStrings()
 
-	loc := []float64{getLat(), getLon()}
+	loc := []float64{getLon(), getLat()}
 
 	var aircraftsInRange []Aircraft
 
 	for _, aircraft := range response.Aircraft {
 
-		planeLoc := []float64{aircraft.Lat, aircraft.Lon}
+		planeLoc := []float64{aircraft.Lon, aircraft.Lat}
 		distance := getRuler().Distance(loc, planeLoc)
 
 		if distance < getRadius() {
@@ -43,13 +45,19 @@ func updateAircraftDatabase(pg *postgres) {
 }
 
 func getRuler() *cheapruler.CheapRuler {
-	ruler, err := cheapruler.NewCheapruler(getLon(), "kilometers")
+	ruler, err := cheapruler.NewCheapruler(getLat(), "kilometers")
 	if err != nil {
 		fmt.Println("Error creating ruler: ", err)
 		return nil
 	}
 
 	return &ruler
+}
+
+func getDistance(aircraft []float64) *float64 {
+	loc := []float64{getLon(), getLat()}
+	distance := getRuler().Distance(loc, aircraft)
+	return &distance
 }
 
 func (pg *postgres) updateDatabase(nowEpoch float64, aircrafts []Aircraft) {
@@ -78,6 +86,9 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			id,
 			hex,
 			last_seen_epoch,
+			last_seen_lat,
+			last_seen_lon,
+			last_seen_distance,
 			alt_baro,
 			alt_geom,
 			gs,
@@ -101,10 +112,14 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			&existingAircraft.Id,
 			&existingAircraft.Hex,
 			&existingAircraft.LastSeenEpoch,
+			&existingAircraft.LastSeenLat,
+			&existingAircraft.LastSeenLon,
+			&existingAircraft.LastSeenDistance,
 			&existingAircraft.AltBaro,
 			&existingAircraft.AltGeom,
 			&existingAircraft.Gs,
-			&existingAircraft.Ias, &existingAircraft.Tas)
+			&existingAircraft.Ias,
+			&existingAircraft.Tas)
 
 		if err != nil {
 			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
@@ -133,15 +148,19 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 	for _, aircraft := range aircrafts {
 		_, exists := existingAircrafts[aircraft.Hex]
 		if !exists {
+			lastSeenDistance := getDistance([]float64{aircraft.Lon, aircraft.Lat})
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 			insertStatement := `
 				INSERT INTO aircraft_data (
-					hex, 
+					hex,
 					flight,
 					first_seen,
 					first_seen_epoch,
 					last_seen,
 					last_seen_epoch,
+					last_seen_lat,
+					last_seen_lon,
+					last_seen_distance,
 					type,
 					r,
 					t,
@@ -177,9 +196,9 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 					rssi,
 					db_flags
 				) VALUES (
-					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
-					$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, 
-					$29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
+					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+					$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
+					$29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43
 				)`
 
 			batch.Queue(insertStatement,
@@ -189,6 +208,9 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 				nowAsEpoch,
 				nowAsTime,
 				nowAsEpoch,
+				aircraft.Lat,
+				aircraft.Lon,
+				lastSeenDistance,
 				aircraft.Type,
 				aircraft.R,
 				aircraft.T,
@@ -247,9 +269,39 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 			continue
 		}
 
+		// Update flight if null and found in subsequent messages
+		if existingAircraft.Flight == "" {
+			if aircraft.Flight != "" {
+				existingAircraft.Flight = aircraft.Flight
+			}
+		}
+
 		// Update last seen time
 		existingAircraft.LastSeenEpoch = nowEpoch
 		existingAircraft.LastSeen = time.Unix(int64(nowEpoch), 0)
+
+		// Update last_seen_lat, last_seen_lon, last_seen_distance with the latest lat/lon
+		existingAircraft.LastSeenLat = sql.NullFloat64{Float64: aircraft.Lat, Valid: true}
+		existingAircraft.LastSeenLon = sql.NullFloat64{Float64: aircraft.Lon, Valid: true}
+		lastSeenDistance := getDistance([]float64{aircraft.Lon, aircraft.Lat})
+		existingAircraft.LastSeenDistance = sql.NullFloat64{Float64: *lastSeenDistance, Valid: true}
+
+		// Update destination distance
+		if aircraft.Flight != "" {
+			routeData, err := getRouteData(pg, aircraft.Flight)
+			if err != nil {
+			} else if routeData != nil && routeData.DestinationLatitude.Valid && routeData.DestinationLongitude.Valid {
+				destinationDistance := getDestinationDistance(
+					aircraft.Lat,
+					aircraft.Lon,
+					routeData.DestinationLatitude.Float64,
+					routeData.DestinationLongitude.Float64)
+				existingAircraft.DestinationDistance = sql.NullFloat64{Float64: destinationDistance, Valid: true}
+			}
+		}
+
+		// Update track
+		existingAircraft.Track = aircraft.Track
 
 		// Update barometric altitude & geometric altitudes if higher than already stored
 		if existingAircraft.AltBaro < aircraft.AltBaro {
@@ -273,23 +325,36 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 		updateStatement := `UPDATE aircraft_data
 							SET last_seen = $1,
 								last_seen_epoch = $2,
-								alt_baro = $3,
-								alt_geom = $4,
-								gs = $5,
-								ias = $6,
-								tas = $7
-							WHERE id = $8`
+								last_seen_lat = $3,
+								last_seen_lon = $4,
+								last_seen_distance = $5,
+								destination_distance = $6,
+								track = $7,
+								alt_baro = $8,
+								alt_geom = $9,
+								gs = $10,
+								ias = $11,
+								tas = $12,
+								flight = $13
+							WHERE id = $14`
 
 		batch.Queue(
 			updateStatement,
 			existingAircraft.LastSeen,
 			existingAircraft.LastSeenEpoch,
+			existingAircraft.LastSeenLat,
+			existingAircraft.LastSeenLon,
+			existingAircraft.LastSeenDistance,
+			existingAircraft.DestinationDistance,
+			existingAircraft.Track,
 			existingAircraft.AltBaro,
 			existingAircraft.AltGeom,
 			existingAircraft.Gs,
 			existingAircraft.Ias,
 			existingAircraft.Tas,
-			existingAircraft.Id)
+			existingAircraft.Flight,
+			existingAircraft.Id,
+		)
 	}
 
 	br := pg.db.SendBatch(context.Background(), batch)
@@ -316,4 +381,53 @@ func getLon() float64 {
 func getRadius() float64 {
 	radius, _ := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
 	return radius
+}
+
+type RouteData struct {
+	DestinationLatitude  sql.NullFloat64
+	DestinationLongitude sql.NullFloat64
+}
+
+func getRouteData(pg *postgres, flight string) (*RouteData, error) {
+	if flight == "" {
+		return nil, nil
+	}
+
+	var route RouteData
+	query := `
+		SELECT destination_latitude, destination_longitude
+		FROM route_data
+		WHERE route_callsign = $1
+		AND destination_latitude IS NOT NULL
+		AND destination_longitude IS NOT NULL
+		LIMIT 1
+	`
+
+	err := pg.db.QueryRow(context.Background(), query, flight).Scan(
+		&route.DestinationLatitude,
+		&route.DestinationLongitude,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil // No route data found
+		}
+		return nil, err
+	}
+
+	return &route, nil
+}
+
+func getDestinationDistance(currentLat, currentLon, destLat, destLon float64) float64 {
+	ruler, err := cheapruler.NewCheapruler(currentLat, "kilometers")
+	if err != nil {
+		fmt.Printf("Error creating ruler for destination distance: %v\n", err)
+		return 0
+	}
+
+	currentLoc := []float64{currentLon, currentLat}
+	destLoc := []float64{destLon, destLat}
+
+	distance := ruler.Distance(currentLoc, destLoc)
+	return math.Round(distance*100) / 100
 }
