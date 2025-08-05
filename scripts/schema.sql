@@ -86,7 +86,9 @@ CREATE TABLE public.aircraft_data (
     interesting_processed boolean DEFAULT false,
     last_seen_lat numeric(9,6),
     last_seen_lon numeric(9,6),
-    last_seen_distance numeric(6,2)
+    last_seen_distance numeric(6,2),
+    last_seen_bearing numeric(6,3),
+    destination_distance numeric(8,2)
 );
 
 
@@ -220,7 +222,9 @@ CREATE TABLE public.route_data (
     destination_latitude numeric(9,6),
     destination_longitude numeric(9,6),
     destination_municipality character varying,
-    destination_name character varying
+    destination_name character varying,
+    last_updated timestamp without time zone,
+    route_distance numeric(8,2)
 );
 
 
