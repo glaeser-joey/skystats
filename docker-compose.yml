@@ -25,6 +25,8 @@ services:
       - LATITUDE=
       - LONGITUDE=
       - RADIUS=
+      - ABOVE_RADIUS=20
+      - DOMESTIC_COUNTRY_ISO=
 
   db-init:
       image: python:3.11-slim
