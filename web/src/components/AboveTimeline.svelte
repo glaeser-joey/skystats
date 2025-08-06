@@ -369,8 +369,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
                                 <div>
                                 <p class="font-bold uppercase tracking-wider">Progress</p>
-                                    <p class="mt-2"><span class="font-semibold">From Origin:</span> {selectedAircraft.traveledDistance}km</p>
-                                    <p><span class="font-semibold">To Destination:</span> {selectedAircraft.remainingDistance}km</p>
+                                    <p class="mt-2"><span class="text-sm font-semibold uppercase">Origin:</span> {selectedAircraft.traveledDistance}km</p>
+                                    <p><span class="text-sm font-semibold uppercase">Destination:</span> {selectedAircraft.remainingDistance}km</p>
                                 </div>
                                 <div class="radial-progress bg-base-300" style="--value:{selectedAircraft.progressPercent}" aria-valuenow={selectedAircraft.progressPercent} role="progressbar">{selectedAircraft.progressPercent}%</div>
                             </div>
