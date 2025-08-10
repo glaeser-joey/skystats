@@ -162,3 +162,31 @@ type RouteInfo struct {
 		} `json:"flightroute"`
 	} `json:"response"`
 }
+
+type LineChartPoint struct {
+	X time.Time `json:"x"`
+	Y float64   `json:"y"`
+}
+
+type LineChartSeries struct {
+	ID     string           `json:"id"`
+	Label  string           `json:"label"`
+	Unit   string           `json:"unit,omitempty"`
+	Points []LineChartPoint `json:"points"`
+}
+
+type LineChartXAxisMeta struct {
+	Type     string `json:"type"`
+	Timezone string `json:"timezone,omitempty"`
+	Unit     string `json:"unit,omitempty"`
+}
+
+type ChartMeta struct {
+	GeneratedAt time.Time `json:"generated_at"`
+}
+
+type LineChartResponse struct {
+	Series []LineChartSeries  `json:"series"`
+	X      LineChartXAxisMeta `json:"x"`
+	Meta   ChartMeta          `json:"meta"`
+}
