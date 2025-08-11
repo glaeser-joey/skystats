@@ -7,8 +7,6 @@
     endpoint='api/stats/interesting/government'
     title="Government Aircraft"
     icon={IconBuildings}
-    iconColor="text-secondary-content"
-    iconBgColor="bg-secondary"
     aircraftType="gov"
 />
     
