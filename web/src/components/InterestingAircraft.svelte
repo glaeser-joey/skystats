@@ -64,14 +64,6 @@
 </script>
 
 <div>
-<!-- <h1 class="card-title mb-4 flex items-center gap-2">
-    {#if icon}
-        <div class="w-8 h-8 {iconBgColor} rounded-lg flex items-center justify-center">
-            <svelte:component this={icon} class="w-5 h-5 {iconColor}" />
-        </div> 
-    {/if}
-    {title}
-</h1> -->
 <div class="card bg-base-100 mb-4 w96 shadow-sm rounded hover:shadow-md transition-all duration-200">
     <div class="card-body">
         <div class="overflow-x-auto">
