@@ -72,6 +72,7 @@ func (s *APIServer) Start() {
 
 			stats.GET("/charts/flights/year", s.getChartFlightsOverTimeYear)
 			stats.GET("/charts/flights/month", s.getChartFlightsOverTimeMonth)
+			stats.GET("/charts/flights/day", s.getChartFlightsOverTimeDay)
 
 		}
 	}
@@ -955,7 +956,7 @@ func (s *APIServer) getChartFlightsOverTimeYear(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	results := []LineChartPoint{}
+	results := []ChartPoint{}
 
 	for rows.Next() {
 		var month time.Time
@@ -966,14 +967,14 @@ func (s *APIServer) getChartFlightsOverTimeYear(c *gin.Context) {
 			continue
 		}
 
-		results = append(results, LineChartPoint{
+		results = append(results, ChartPoint{
 			X: month,
 			Y: float64(count),
 		})
 	}
 
-	c.JSON(http.StatusOK, LineChartResponse{
-		Series: []LineChartSeries{
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
 			{
 				ID:     "flights_year",
 				Label:  "Flights Past Year",
@@ -981,7 +982,7 @@ func (s *APIServer) getChartFlightsOverTimeYear(c *gin.Context) {
 				Points: results,
 			},
 		},
-		X: LineChartXAxisMeta{
+		X: ChartXAxisMeta{
 			Type:     "time",
 			Timezone: "UTC",
 			Unit:     "month",
@@ -1024,7 +1025,7 @@ func (s *APIServer) getChartFlightsOverTimeMonth(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	results := []LineChartPoint{}
+	results := []ChartPoint{}
 
 	for rows.Next() {
 		var day time.Time
@@ -1035,14 +1036,14 @@ func (s *APIServer) getChartFlightsOverTimeMonth(c *gin.Context) {
 			continue
 		}
 
-		results = append(results, LineChartPoint{
+		results = append(results, ChartPoint{
 			X: day,
 			Y: float64(count),
 		})
 	}
 
-	c.JSON(http.StatusOK, LineChartResponse{
-		Series: []LineChartSeries{
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
 			{
 				ID:     "flights_month",
 				Label:  "Flights Past Month",
@@ -1050,10 +1051,77 @@ func (s *APIServer) getChartFlightsOverTimeMonth(c *gin.Context) {
 				Points: results,
 			},
 		},
-		X: LineChartXAxisMeta{
+		X: ChartXAxisMeta{
 			Type:     "time",
 			Timezone: "UTC",
 			Unit:     "day",
+		},
+		Meta: ChartMeta{
+			GeneratedAt: time.Now(),
+		},
+	})
+}
+
+func (s *APIServer) getChartFlightsOverTimeDay(c *gin.Context) {
+
+	query := `WITH end_hour AS (
+				SELECT date_trunc('hour', CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AS h,
+				       CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AS now
+				)
+				SELECT
+				gs AS hour,
+				COALESCE(c.count, 0) AS count
+				FROM generate_series(
+					(SELECT h FROM end_hour) - interval '23 hours',
+					(SELECT h FROM end_hour),
+					interval '1 hour'
+					) AS gs
+				LEFT JOIN (
+				SELECT date_trunc('hour', first_seen) AS hour, COUNT(*) AS count
+				FROM aircraft_data, end_hour
+				WHERE first_seen >= (SELECT h FROM end_hour) - interval '23 hours'
+					AND first_seen <= (SELECT now FROM end_hour)
+				GROUP BY 1
+				) c ON c.hour = gs
+				ORDER BY gs;`
+
+	rows, err := s.pg.db.Query(context.Background(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	results := []ChartPoint{}
+
+	for rows.Next() {
+		var hour time.Time
+		var count int
+
+		err := rows.Scan(&hour, &count)
+		if err != nil {
+			continue
+		}
+
+		results = append(results, ChartPoint{
+			X: hour,
+			Y: float64(count),
+		})
+	}
+
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
+			{
+				ID:     "flights_day",
+				Label:  "Flights Past 24 Hours",
+				Unit:   "count",
+				Points: results,
+			},
+		},
+		X: ChartXAxisMeta{
+			Type:     "time",
+			Timezone: "UTC",
+			Unit:     "hour",
 		},
 		Meta: ChartMeta{
 			GeneratedAt: time.Now(),
