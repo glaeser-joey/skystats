@@ -13,9 +13,9 @@
 
   const tabs = [
     { name: 'route-stat', label: 'Route Information', component: TabRouteStats },
+    { name: 'activity', label: 'Activity', component: TabActivity },
     { name: 'interesting-stat', label: 'Interesting Aircraft', component: TabInterestingStats },
-    { name: 'motion-stat', label: 'Record Holders', component: TabMotionStats },
-    { name: 'activity', label: 'Activity', component: TabActivity }
+    { name: 'motion-stat', label: 'Record Holders', component: TabMotionStats }
   ];
 
   function setActiveTab(tabName) {
