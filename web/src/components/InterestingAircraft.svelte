@@ -82,15 +82,16 @@
                     <span>No data available</span>
                 </div>
             {:else}
-            <div class="flex items-center gap-2 mb-5">
-            {#if icon}
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center">
-                    <svelte:component this={icon} class="w-6 h-6 text-primary" />
-                </div> 
-            {/if}
-            <h2 class="text-2xl font-extralight tracking-wider">{title}</h2>
-            </div>
-
+                <!-- table header-->
+                <div class="flex items-center gap-2 mb-5">
+                {#if icon}
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                        <svelte:component this={icon} class="w-6 h-6 text-primary" />
+                    </div> 
+                {/if}
+                <h2 class="text-2xl font-extralight tracking-wider">{title}</h2>
+                </div>
+                <!-- table-->
                 <table class="table">
                     <thead class="uppercase tracking-wider">
                         <tr>
@@ -117,6 +118,7 @@
 </div>
 </div>
 
+<!--modal-->
 <dialog id={aircraftType} class="modal" on:close={closeModal}>
     <div class="modal-box max-w-4xl">
         {#if selectedAircraft}
