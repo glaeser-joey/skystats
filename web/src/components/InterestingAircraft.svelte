@@ -96,7 +96,7 @@
                     <svelte:component this={icon} class="w-6 h-6 text-primary" />
                 </div> 
             {/if}
-            <h2 class="text-2xl font-extralight text-primary tracking-wider">{title}</h2>
+            <h2 class="text-2xl font-extralight tracking-wider">{title}</h2>
             </div>
 
                 <table class="table">
