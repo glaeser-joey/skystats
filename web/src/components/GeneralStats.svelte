@@ -60,7 +60,7 @@
 {:else}
     <!-- Aircraft Seen Stats -->
     <div class="flex justify-center gap-10">
-    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
+    <div class="p-2 stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
         <div class="stat">
             <div class="stat-figure">
                 <div class="icon icon-tabler icons-tabler-outline">
@@ -95,7 +95,7 @@
 
     <!-- Route stats -->
     
-    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
+    <div class="p-2 stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
         <div class="stat">
             <div class="stat-figure">
                 <div class="icon icon-tabler icons-tabler-outline">
