@@ -33,11 +33,9 @@
 
 ## Setup
 
-There are environment variables (`LATITUDE`, `LONGITUDE`, `RADIUS`) that can be used to only process aircraft data that falls within a particular boundary - similar to [planefence](https://github.com/sdr-enthusiasts/docker-planefence). Alternatively, setting the `RADIUS` to something larger than that of your SDR will mean all aircraft data is processed.
-
 ### Running in Docker (recommended)
 * Clone this repository
-* Populate `docker-compose.yml` with all required values
+* Populate `docker-compose.yml` with all required values. See [Environment Variables](#environment-variables)
 * Run `docker compose up -d --build`
 
 ### Running locally (eg. to develop)
