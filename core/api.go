@@ -70,6 +70,10 @@ func (s *APIServer) Start() {
 
 			stats.GET("/types/top", s.getTopAircraftTypes)
 
+			stats.GET("/charts/flights/year", s.getChartFlightsOverTimeYear)
+			stats.GET("/charts/flights/month", s.getChartFlightsOverTimeMonth)
+			stats.GET("/charts/flights/day", s.getChartFlightsOverTimeDay)
+
 		}
 	}
 
@@ -920,10 +924,213 @@ func (s *APIServer) getTopDomesticAirports(c *gin.Context) {
 
 }
 
+func (s *APIServer) getChartFlightsOverTimeYear(c *gin.Context) {
+
+	query := `WITH months AS (
+				SELECT generate_series(
+					DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months'),
+					DATE_TRUNC('month', CURRENT_DATE),
+					'1 month'
+				)::date AS month
+				),
+				counts AS (
+				SELECT
+					DATE_TRUNC('month', first_seen)::date AS month,
+					COUNT(*) AS count
+				FROM aircraft_data
+				WHERE first_seen >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months')
+					AND first_seen < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+				GROUP BY 1
+				)
+				SELECT
+				m.month,
+				COALESCE(c.count, 0) AS count
+				FROM months m
+				LEFT JOIN counts c USING (month)
+				ORDER BY m.month;`
+
+	rows, err := s.pg.db.Query(context.Background(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	results := []ChartPoint{}
+
+	for rows.Next() {
+		var month time.Time
+		var count int
+
+		err := rows.Scan(&month, &count)
+		if err != nil {
+			continue
+		}
+
+		results = append(results, ChartPoint{
+			X: month,
+			Y: float64(count),
+		})
+	}
+
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
+			{
+				ID:     "flights_year",
+				Label:  "Flights Past Year",
+				Unit:   "count",
+				Points: results,
+			},
+		},
+		X: ChartXAxisMeta{
+			Type:     "time",
+			Timezone: "UTC",
+			Unit:     "month",
+		},
+		Meta: ChartMeta{
+			GeneratedAt: time.Now(),
+		},
+	})
+}
+
+func (s *APIServer) getChartFlightsOverTimeMonth(c *gin.Context) {
+
+	query := `WITH days AS (
+				SELECT generate_series(
+					CURRENT_DATE - INTERVAL '1 month',
+					CURRENT_DATE,
+					'1 day'
+				)::date AS day
+				),
+				counts AS (
+				SELECT
+					DATE(first_seen) AS day,
+					COUNT(*) AS count
+				FROM aircraft_data
+				WHERE first_seen >= CURRENT_DATE - INTERVAL '1 month'
+					AND first_seen < CURRENT_DATE + INTERVAL '1 day'
+				GROUP BY 1
+				)
+				SELECT
+				d.day,
+				COALESCE(c.count, 0) AS count
+				FROM days d
+				LEFT JOIN counts c USING (day)
+				ORDER BY d.day;`
+
+	rows, err := s.pg.db.Query(context.Background(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	results := []ChartPoint{}
+
+	for rows.Next() {
+		var day time.Time
+		var count int
+
+		err := rows.Scan(&day, &count)
+		if err != nil {
+			continue
+		}
+
+		results = append(results, ChartPoint{
+			X: day,
+			Y: float64(count),
+		})
+	}
+
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
+			{
+				ID:     "flights_month",
+				Label:  "Flights Past Month",
+				Unit:   "count",
+				Points: results,
+			},
+		},
+		X: ChartXAxisMeta{
+			Type:     "time",
+			Timezone: "UTC",
+			Unit:     "day",
+		},
+		Meta: ChartMeta{
+			GeneratedAt: time.Now(),
+		},
+	})
+}
+
+func (s *APIServer) getChartFlightsOverTimeDay(c *gin.Context) {
+
+	query := `WITH end_hour AS (
+				SELECT date_trunc('hour', CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AS h,
+				       CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AS now
+				)
+				SELECT
+				gs AS hour,
+				COALESCE(c.count, 0) AS count
+				FROM generate_series(
+					(SELECT h FROM end_hour) - interval '23 hours',
+					(SELECT h FROM end_hour),
+					interval '1 hour'
+					) AS gs
+				LEFT JOIN (
+				SELECT date_trunc('hour', first_seen) AS hour, COUNT(*) AS count
+				FROM aircraft_data, end_hour
+				WHERE first_seen >= (SELECT h FROM end_hour) - interval '23 hours'
+					AND first_seen <= (SELECT now FROM end_hour)
+				GROUP BY 1
+				) c ON c.hour = gs
+				ORDER BY gs;`
+
+	rows, err := s.pg.db.Query(context.Background(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	results := []ChartPoint{}
+
+	for rows.Next() {
+		var hour time.Time
+		var count int
+
+		err := rows.Scan(&hour, &count)
+		if err != nil {
+			continue
+		}
+
+		results = append(results, ChartPoint{
+			X: hour,
+			Y: float64(count),
+		})
+	}
+
+	c.JSON(http.StatusOK, ChartResponse{
+		Series: []ChartSeries{
+			{
+				ID:     "flights_day",
+				Label:  "Flights Past 24 Hours",
+				Unit:   "count",
+				Points: results,
+			},
+		},
+		X: ChartXAxisMeta{
+			Type:     "time",
+			Timezone: "UTC",
+			Unit:     "hour",
+		},
+		Meta: ChartMeta{
+			GeneratedAt: time.Now(),
+		},
+	})
+}
+
 func (s *APIServer) getTopInternationalAirports(c *gin.Context) {
 	limit := s.getLimit(c)
-
-	fmt.Printf("GET COUNTRY: %s\n", s.getCountry())
 
 	query := `
 		SELECT
