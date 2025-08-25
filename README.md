@@ -45,7 +45,10 @@
 * Change to the `core` folder e.g. `cd core`
 * Compile with `go build -o skystats-daemon`
 * Run the app `./skystats-daemon`
-* It can be terminated via `kill $(cat skystats/core/skystats.pid)`
+    * It can be terminated via `kill $(cat skystats/core/skystats.pid)`
+* Run the webserver 
+    * Change to the /web directory e.g. `cd ../web`
+    * Start the webserver with `npm run dev -- --host`
 
 ### Environment Variables
 
