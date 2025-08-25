@@ -37,6 +37,7 @@
 * Clone this repository
 * Populate `docker-compose.yml` with all required values. See [Environment Variables](#environment-variables)
 * Run `docker compose up -d --build`
+* The interface should be available on `localhost:5173` where localhost is the IP of the docker host
 
 ### Running locally (eg. to develop)
 * Clone this repository
