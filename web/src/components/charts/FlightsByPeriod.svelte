@@ -15,7 +15,7 @@
     } from 'chart.js';
     import 'chartjs-adapter-date-fns';
 
-    export let period = 'year'; // 'year', 'month', or 'day'
+    export let period = 'day'; // 'year', 'month', or 'day'
 
     /* Data setup */
 
