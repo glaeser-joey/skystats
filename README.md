@@ -41,7 +41,7 @@
 ### Running locally (eg. to develop)
 * Clone this repository
 * Create the postgres db (e.g. in a Docker container) - `/scripts/schema.sql` can be used to initialise the database
-* Rename `.env-example` to `.env` and populate
+* Rename `.env-example` to `.env` and populate. See [Environment Variables](#environment-variables)
 * Change to the `core` folder e.g. `cd core`
 * Compile with `go build -o skystats-daemon`
 * Run the app `./skystats-daemon`
