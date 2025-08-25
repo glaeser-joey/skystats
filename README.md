@@ -67,7 +67,7 @@
 | RADIUS | Distance in km from your receiver that you want to record aircraft. Set to a distance greater than that of your receiver to capture all aircraft. | `1000` |
 | DOMESTIC_COUNTRY | ISO 2-letter country code of the country your receiver is in - used to generate the "Domestic Airport" stats. | `GB` |
 
-#### These environment variables most likely shouldn't be changed - keep as their default values
+#### These environment variables generally shouldn't be changed - keep as their default values
 
 | Environment Variable | Description | Default Value |
 |---|---|---|
