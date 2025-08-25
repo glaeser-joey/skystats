@@ -35,6 +35,10 @@
 
 There are environment variables (`LATITUDE`, `LONGITUDE`, `RADIUS`) that can be used to only process aircraft data that falls within a particular boundary - similar to [planefence](https://github.com/sdr-enthusiasts/docker-planefence). Alternatively, setting the `RADIUS` to something larger than that of your SDR will mean all aircraft data is processed.
 
+### Running in Docker (recommended)
+* Clone this repository
+* Populate `docker-compose.yml` with all required values
+* Run `docker compose up -d --build`
 
 ### Running locally (eg. to develop)
 * Clone this repository
@@ -45,29 +49,39 @@ There are environment variables (`LATITUDE`, `LONGITUDE`, `RADIUS`) that can be 
 * Run the app `./skystats-daemon`
 * It can be terminated via `kill $(cat skystats/core/skystats.pid)`
 
-### Running in Docker
-* Clone this repository
-* Populate `docker-compose.yml` with all required values
-* Run `docker compose up -d --build`
-
-
 ### Environment Variables
 
-Either set in `.env` for local development, or `docker-compose.yml` when running in docker.
+#### These environment variables should all be configured based on your setup, location etc
 
-| DB_NAME                   | Name of the postgres database - `skystats_db`                                                                                                             |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| DB_USER                   | Postgres username - `admin`                                                                                                                               |
-| DB_PASSWORD               | Postgres password - `password`                                                                                                                            |
-| DB_HOST                   | Postgres host - `192.168.1.xxx`                                                                                                                           |
-| DB_PORT                   | Postgres port - `5432`                                                                                                                                    |
-| ADSB_HOST                 | IP of the ADSB receiver running readsb - `192.168.1.xxx`                                                                                                  |
-| ADSB_PORT                 | Port on ADSB receiver where readsb aircraft.json being served - `8080` (Note: Not the `30047/tcp` port which streams JSON data)                           |
-| LATITUDE                  | Lattitude of your receiver - `xx.xxxxxx`                                                                                                                  |
-| LONGITUDE                 | Longitude of your receiver - `yy.yyyyyy`                                                                                                                  |
-| RADIUS                    | Distance in km from your receiver that you want to record aircraft. Set to a distance greater than that of your receiver to capture all aircraft - `1000` |
-| ADSB_DB_AIRCRAFT_ENDPOINT | ADSB DB aircraft endpoint, used for registration data - `https://api.adsbdb.com/v0/aircraft/`                                                             |
-| ADSB_DB_CALLSIGN_ENDPOINT | ADSB DB callsign endpoint, used for route data - `https://api.adsbdb.com/v0/callsign/`                                                                    |
+| Environment Variable | Description | Example |
+|---|---|---|
+| ADSB_HOST | IP of the ADSB receiver running readsb. | `192.168.1.50` |
+| ADSB_PORT | Port on ADSB receiver where readsb aircraft.json being served. You can check via accessing `{ADSB_HOST}:{ADSB_PORT}/data/aircraft.json` in a browser and seeing if you see aircraft.json contents. | `8080` |
+| POSTGRES_USER | Username you want to set for the postgresql database. | `admin` |
+| POSTGRES_PASSWORD | Password you want to set for the postgresql database. | `password` |
+| DB_USER | * Username of the postgresql database * Must match `POSTGRES_USER` * There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `admin` |
+| DB_PASSWORD | * Password of the postgresql database * Must match `POSTGRES_PASSWORD` * There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `password` |
+| LATITUDE | Lattitude of your receiver. | `XX.XXXXXX` |
+| LONGITUDE | Longitude of your receiver. | `YY.YYYYYY` |
+| RADIUS | Distance in km from your receiver that you want to record aircraft. Set to a distance greater than that of your receiver to capture all aircraft. | `1000` |
+| DOMESTIC_COUNTRY | ISO 2-letter country code of the country your receiver is in - used to generate the "Domestic Airport" stats. | `GB` |
+
+#### These environment variables most likely shouldn't be changed - keep as their default values
+
+| Environment Variable | Description | Default Value |
+|---|---|---|
+| DOCKER_ENV | Flag used to skip daemonising the app when running in Docker. Do not change to `false` unless running outside Docker .(e.g. for development / debugging). | `true` |
+| POSTGRES_DB | Name of the postgresql database. | `skystats_db` |
+| DB_HOST | Name of the docker container hosting the postgresql database. | `skystats-db-docker` |
+| DB_PORT | Default port for postgresql. | `5432` |
+| DB_NAME | Name of the postgresql database. | `skystats_db` |
+| API_PORT | Port that the Skystats API will be served on. | `8080` |
+| ABOVE_RADIUS | Radius for the "Above Timeline" - currently only 20km supported. | `20` |
+| ADSB_DB_AIRCRAFT_ENDPOINT | ADSB DB aircraft endpoint, used for registration data. | `https://api.adsbdb.com/v0/aircraft/` |
+| ADSB_DB_CALLSIGN_ENDPOINT | ADSB DB callsign endpoint, used for route data. | `https://api.adsbdb.com/v0/callsign/` |
+| PLANE_DB_URL | URL of the plane-alert-db list of interesting planes. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane-alert-db.csv` |
+| IMAGE_DB_URL | URL of the plane-alert-db image urls. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv` |
+
 
 ## Screenshots
 
