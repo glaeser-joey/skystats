@@ -61,8 +61,8 @@
 | ADSB_PORT | Port on ADSB receiver where readsb aircraft.json being served. You can check via accessing `{ADSB_HOST}:{ADSB_PORT}/data/aircraft.json` in a browser and seeing if you see aircraft.json contents. | `8080` |
 | POSTGRES_USER | Username you want to set for the postgresql database. | `admin` |
 | POSTGRES_PASSWORD | Password you want to set for the postgresql database. | `password` |
-| DB_USER | * Username of the postgresql database * Must match `POSTGRES_USER` * There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `admin` |
-| DB_PASSWORD | * Password of the postgresql database * Must match `POSTGRES_PASSWORD` * There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `password` |
+| DB_USER | Username of the postgresql database <br/> Must match `POSTGRES_USER` <br/> There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `admin` |
+| DB_PASSWORD | Password of the postgresql database <br/> Must match `POSTGRES_PASSWORD` <br/> There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `password` |
 | LATITUDE | Lattitude of your receiver. | `XX.XXXXXX` |
 | LONGITUDE | Longitude of your receiver. | `YY.YYYYYY` |
 | RADIUS | Distance in km from your receiver that you want to record aircraft. Set to a distance greater than that of your receiver to capture all aircraft. | `1000` |
