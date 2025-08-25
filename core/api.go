@@ -17,7 +17,7 @@ type APIServer struct {
 }
 
 func NewAPIServer(pg *postgres) *APIServer {
-	port := os.Getenv("APP_PORT")
+	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = "8080"
 	}

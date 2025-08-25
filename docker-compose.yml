@@ -13,7 +13,7 @@ services:
       - ADSB_PORT=
       # PostgreSQL
       - DB_HOST=skystats-db-docker
-      - DB_PORT=
+      - DB_PORT=5432
       - DB_USER=
       - DB_PASSWORD=
       - DB_NAME=skystats_db
@@ -21,7 +21,7 @@ services:
       - ADSB_DB_AIRCRAFT_ENDPOINT=https://api.adsbdb.com/v0/aircraft/
       - ADSB_DB_CALLSIGN_ENDPOINT=https://api.adsbdb.com/v0/callsign/
       # App
-      - APP_PORT=8080
+      - API_PORT=8080
       - LATITUDE=
       - LONGITUDE=
       - RADIUS=
@@ -49,7 +49,7 @@ services:
         - skystats-db-docker
       environment:
         - DB_HOST=skystats-db-docker
-        - DB_PORT=
+        - DB_PORT=5432
         - DB_USER=
         - DB_PASSWORD=
         - DB_NAME=skystats_db
