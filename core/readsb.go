@@ -8,7 +8,7 @@ import (
 
 func Fetch() ([]byte, error) {
 
-	url := "http://" + os.Getenv("ADSB_HOST") + ":" + os.Getenv("ADSB_PORT") + "/data/aircraft.json"
+	url := os.Getenv("READSB_AIRCRAFT_JSON")
 
 	response, err := http.Get(url)
 
