@@ -58,7 +58,7 @@ services:
         - DB_PASSWORD=${DB_PASSWORD}
         - DB_NAME=${DB_NAME}
         - PLANE_DB_URL=https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane-alert-db.csv
-        - IMAGE_DB_URL=https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csvi
+        - IMAGE_DB_URL=https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv
         - TZ=${TZ}
       volumes:
         - ./scripts:/app
