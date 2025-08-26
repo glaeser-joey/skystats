@@ -21,8 +21,8 @@ def main():
 
 
 def get_data():
-    plane_db_url = os.getenv("PLANE_DB_URL")
-    image_db_url = os.getenv("IMAGE_DB_URL")
+    plane_db_url = os.getenv("PLANE_DB_URL", "https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/main/plane-alert-db.csv")
+    image_db_url = os.getenv("IMAGE_DB_URL", "https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv")
 
     df_planes = pd.read_csv(plane_db_url)
     df_images = pd.read_csv(image_db_url)

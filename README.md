@@ -78,8 +78,6 @@
 | DB_NAME | Name of the postgresql database. | `skystats_db` |
 | API_PORT | Port that the Skystats API will be served on. | `8080` |
 | ABOVE_RADIUS | Radius for the "Above Timeline" - currently only 20km supported. | `20` |
-| ADSB_DB_AIRCRAFT_ENDPOINT | ADSB DB aircraft endpoint, used for registration data. | `https://api.adsbdb.com/v0/aircraft/` |
-| ADSB_DB_CALLSIGN_ENDPOINT | ADSB DB callsign endpoint, used for route data. | `https://api.adsbdb.com/v0/callsign/` |
 | PLANE_DB_URL | URL of the plane-alert-db list of interesting planes. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane-alert-db.csv` |
 | IMAGE_DB_URL | URL of the plane-alert-db image urls. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv` |
 
