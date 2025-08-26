@@ -369,12 +369,12 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 }
 
 func getLat() float64 {
-	lat, _ := strconv.ParseFloat(os.Getenv("LATITUDE"), 64)
+	lat, _ := strconv.ParseFloat(os.Getenv("LAT"), 64)
 	return lat
 }
 
 func getLon() float64 {
-	lon, _ := strconv.ParseFloat(os.Getenv("LONGITUDE"), 64)
+	lon, _ := strconv.ParseFloat(os.Getenv("LON"), 64)
 	return lon
 }
 
