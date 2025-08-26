@@ -57,8 +57,7 @@
 
 | Environment Variable | Description | Example |
 |---|---|---|
-| ADSB_HOST | IP of the ADSB receiver running readsb. | `192.168.1.50` |
-| ADSB_PORT | Port on ADSB receiver where readsb aircraft.json being served. You can check via accessing `{ADSB_HOST}:{ADSB_PORT}/data/aircraft.json` in a browser and seeing if you see aircraft.json contents. | `8080` |
+| READSB_AIRCRAFT_JSON | URL of where readsb [aircraft.json](https://github.com/wiedehopf/readsb-githist/blob/dev/README-json.md) is being served. | `http://192.168.1.50:8080/data/aircraft.json` |
 | POSTGRES_USER | Username you want to set for the postgresql database. | `admin` |
 | POSTGRES_PASSWORD | Password you want to set for the postgresql database. | `password` |
 | DB_USER | - Username of the postgresql database <br/> - Must match `POSTGRES_USER` <br/> - There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `admin` |

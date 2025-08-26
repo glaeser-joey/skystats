@@ -9,8 +9,7 @@ services:
       # Docker environment flag (used to skip daemonising the app when in Docker)
       - DOCKER_ENV=true
       # ADSB
-      - ADSB_HOST=
-      - ADSB_PORT=
+      - READSB_AIRCRAFT_JSON=
       # PostgreSQL
       - DB_HOST=skystats-db-docker
       - DB_PORT=5432
