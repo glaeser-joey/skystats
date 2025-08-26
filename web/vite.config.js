@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: process.env.NODE_ENV === 'development' && process.env.DOCKER_ENV ? 
-          'http://app:8080' : 'http://localhost:8080',
+          'http://skystats-api:8080' : 'http://localhost:8080',
         changeOrigin: true,
       }
     }
