@@ -14,8 +14,11 @@ import (
 func main() {
 
 	// Load .env file if it exists (optional for Docker)
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variables")
+	// Try to load from parent directory first, then current directory
+	if err := godotenv.Load("../.env"); err != nil {
+		if err := godotenv.Load(); err != nil {
+			log.Println("No .env file found, using environment variables")
+		}
 	}
 
 	// Skip daemonization if running in Docker
