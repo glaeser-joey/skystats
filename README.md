@@ -31,8 +31,6 @@
 * Highest Aircraft
 * Lowest Aircraft
 
-<br/>
-
 ## Setup
 
 ### Running in Docker (recommended)
