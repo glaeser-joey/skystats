@@ -54,8 +54,6 @@ services:
         - DB_USER=${DB_USER}
         - DB_PASSWORD=${DB_PASSWORD}
         - DB_NAME=${DB_NAME}
-        - PLANE_DB_URL=${PLANE_DB_URL}
-        - IMAGE_DB_URL=${IMAGE_DB_URL}
         - TZ=${TZ}
       volumes:
         - ./scripts:/app
