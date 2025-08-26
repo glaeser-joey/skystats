@@ -17,13 +17,10 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      # ADSB DB API
-      - ADSB_DB_AIRCRAFT_ENDPOINT=https://api.adsbdb.com/v0/aircraft/
-      - ADSB_DB_CALLSIGN_ENDPOINT=https://api.adsbdb.com/v0/callsign/
       # App
       - API_PORT=8080
-      - LATITUDE=${LAT}
-      - LONGITUDE=${LON}
+      - LAT=${LAT}
+      - LON=${LON}
       - RADIUS=${RADIUS}
       - ABOVE_RADIUS=${ABOVE_RADIUS}
       - DOMESTIC_COUNTRY_ISO=${DOMESTIC_COUNTRY_ISO}
@@ -57,8 +54,6 @@ services:
         - DB_USER=${DB_USER}
         - DB_PASSWORD=${DB_PASSWORD}
         - DB_NAME=${DB_NAME}
-        - PLANE_DB_URL=https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane-alert-db.csv
-        - IMAGE_DB_URL=https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv
         - TZ=${TZ}
       volumes:
         - ./scripts:/app

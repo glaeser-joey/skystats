@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -116,7 +115,7 @@ func insertRegistrations(pg *postgres, registrations []RegistrationInfo) {
 
 func getRegistration(aircraft Aircraft) (*RegistrationInfo, error) {
 
-	url := os.Getenv("ADSB_DB_AIRCRAFT_ENDPOINT")
+	url := "https://api.adsbdb.com/v0/aircraft/"
 	url += aircraft.Hex
 
 	response, err := http.Get(url)

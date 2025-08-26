@@ -31,18 +31,22 @@
 * Highest Aircraft
 * Lowest Aircraft
 
+<br/>
+
 ## Setup
 
 ### Running in Docker (recommended)
 * Clone this repository
-* Populate `docker-compose.yml` with all required values. See [Environment Variables](#environment-variables)
+* Copy the contents of `.env.example` into a new file called `.env`
+* Populate `.env` with all required values. See [Environment Variables](#environment-variables)
 * Run `docker compose up -d --build`
 * The interface should be available on `localhost:5173` where localhost is the IP of the docker host
 
-### Running locally (eg. to develop)
+### Running locally (e.g. to develop)
 * Clone this repository
-* Create the postgres db (e.g. in a Docker container) - `/scripts/schema.sql` can be used to initialise the database
-* Rename `.env-example` to `.env` and populate. See [Environment Variables](#environment-variables)
+* Create the postgres database (e.g. in a Docker container) - `/scripts/schema.sql` can be used to initialise the database
+* Copy the contents of `.env.example` into a new file called `.env`
+* Populate `.env` with all required values. See [Environment Variables](#environment-variables)
 * Change to the `core` folder e.g. `cd core`
 * Compile with `go build -o skystats-daemon`
 * Run the app `./skystats-daemon`
@@ -53,36 +57,44 @@
 
 ### Environment Variables
 
-#### These environment variables should all be configured based on your setup, location etc
-
 | Environment Variable | Description | Example |
 |---|---|---|
-| READSB_AIRCRAFT_JSON | URL of where readsb [aircraft.json](https://github.com/wiedehopf/readsb-githist/blob/dev/README-json.md) is being served. | `http://192.168.1.50:8080/data/aircraft.json` |
-| POSTGRES_USER | Username you want to set for the postgresql database. | `admin` |
-| POSTGRES_PASSWORD | Password you want to set for the postgresql database. | `password` |
-| DB_USER | - Username of the postgresql database <br/> - Must match `POSTGRES_USER` <br/> - There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `admin` |
-| DB_PASSWORD | - Password of the postgresql database <br/> - Must match `POSTGRES_PASSWORD` <br/> - There are two places in the docker-compose.yml where it must be set;`app` and `db-init` | `password` |
-| LATITUDE | Lattitude of your receiver. | `XX.XXXXXX` |
-| LONGITUDE | Longitude of your receiver. | `YY.YYYYYY` |
+| READSB_AIRCRAFT_JSON | URL of where readsb [aircraft.json](https://github.com/wiedehopf/readsb-githist/blob/dev/README-json.md) is being served e.g. http://yourhost:yourport/data/aircraft.json | `http://192.168.1.100:8080/data/aircraft.json` |
+| DB_HOST | Postgres host. If running in docker this should be the name of the postgres container. If running locally it should be the IP/hostname of wherever postgres is hosted. | Docker: `skystats-db` <br/> Local: `192.168.1.10` |
+| DB_PORT | Postgres port | `5432` |
+| DB_USER | Postgres username | `user` |
+| DB_PASSWORD | Postgres password | `1234` |
+| DB_NAME | Postgres database name | `skystats_db` |
+| DOMESTIC_COUNTRY_ISO | ISO 2-letter country code of the country your receiver is in - used to generate the "Domestic Airport" stats. | `GB` |
+| LAT | Lattitude of your receiver. | `XX.XXXXXX` |
+| LON | Longitude of your receiver. | `YY.YYYYYY` |
 | RADIUS | Distance in km from your receiver that you want to record aircraft. Set to a distance greater than that of your receiver to capture all aircraft. | `1000` |
-| DOMESTIC_COUNTRY | ISO 2-letter country code of the country your receiver is in - used to generate the "Domestic Airport" stats. | `GB` |
+| ABOVE_RADIUS | Radius for the "Above Timeline" <br/> **Note: currently only 20km supported.** | `20` |
+| TZ | Timezone for docker containers | `Etc/UTC` |
 
-#### These environment variables generally shouldn't be changed - keep as their default values
+<br/>
 
-| Environment Variable | Description | Default Value |
-|---|---|---|
-| DOCKER_ENV | Flag used to skip daemonising the app when running in Docker. Do not change to `false` unless running outside Docker .(e.g. for development / debugging). | `true` |
-| POSTGRES_DB | Name of the postgresql database. | `skystats_db` |
-| DB_HOST | Name of the docker container hosting the postgresql database. | `skystats-db-docker` |
-| DB_PORT | Default port for postgresql. | `5432` |
-| DB_NAME | Name of the postgresql database. | `skystats_db` |
-| API_PORT | Port that the Skystats API will be served on. | `8080` |
-| ABOVE_RADIUS | Radius for the "Above Timeline" - currently only 20km supported. | `20` |
-| ADSB_DB_AIRCRAFT_ENDPOINT | ADSB DB aircraft endpoint, used for registration data. | `https://api.adsbdb.com/v0/aircraft/` |
-| ADSB_DB_CALLSIGN_ENDPOINT | ADSB DB callsign endpoint, used for route data. | `https://api.adsbdb.com/v0/callsign/` |
-| PLANE_DB_URL | URL of the plane-alert-db list of interesting planes. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane-alert-db.csv` |
-| IMAGE_DB_URL | URL of the plane-alert-db image urls. | `https://raw.githubusercontent.com/sdr-enthusiasts/plane-alert-db/refs/heads/main/plane_images.csv` |
+## Advanced Use Cases
 
+### Custom plane-alert-db csv
+
+If you live in an area where you frequently see planes that you are not interested in, you can provide a custom version of [plane-alert-db](https://github.com/sdr-enthusiasts/plane-alert-db).
+
+Add the following the the `.env` file:
+```
+PLANE_DB_URL=some/custom/location/plane-alert-db.csv
+IMAGE_DB_URL=some/custom/location/plane_images.csv
+```
+
+And the following to `docker-compose.yml` under the `skystats-db-init` service:
+```
+- PLANE_DB_URL=${PLANE_DB_URL}
+- IMAGE_DB_URL=${IMAGE_DB_URL}
+```
+
+**⚠️ The format of the csv must match the format of plane-alert-db**
+
+<br/>
 
 ## Screenshots
 
@@ -104,5 +116,3 @@
 
 ### Motion Stats
 ![MotionStats](docs/screenshots/6_MotionStats.png)
-
-

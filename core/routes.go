@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -187,7 +186,7 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 
 func getRoute(aircraft Aircraft) (*RouteInfo, error) {
 
-	url := os.Getenv("ADSB_DB_CALLSIGN_ENDPOINT")
+	url := "https://api.adsbdb.com/v0/callsign/"
 	url += aircraft.Flight
 
 	response, err := http.Get(url)
