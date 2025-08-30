@@ -15,11 +15,12 @@
     } from 'chart.js';
     import 'chartjs-adapter-date-fns';
 
+    export let type = 'flights'; // 'flights' or 'aircraft'
     export let period = 'day'; // 'year', 'month', or 'day'
 
     /* Data setup */
 
-    const endpoint = `/api/stats/charts/flights/${period}`;
+    const endpoint = `/api/stats/charts/${type}/${period}`;
 
     async function fetchData() {
         try {
@@ -35,7 +36,7 @@
                 chartData = {
                     labels: series.points.map(p => new Date(p.x)),
                     dataPoints: series.points.map(p => p.y),
-                    label: series.label || 'Aircraft Over Time',
+                    label: series.label || (type === 'flights' ? 'Flights Over Time' : 'Aircraft Over Time'),
                     unit: result.x?.unit || (period === 'year' ? 'month' : period === 'month' ? 'day' : 'hour')
                 };
             }
@@ -199,7 +200,8 @@
             title: getTooltipTitle,
             label: (context) => {
                 const value = context.parsed.y;
-                return value.toLocaleString() + ' aircraft';
+                const unit = type === 'flights' ? 'flights' : 'aircraft';
+                return value.toLocaleString() + ' ' + unit;
             }
         };
         

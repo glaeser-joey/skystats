@@ -125,7 +125,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
 			continue
 		}
-		if nowEpoch-existingAircraft.LastSeenEpoch > 300 {
+		if nowEpoch-existingAircraft.LastSeenEpoch > 600 {
 			continue
 		}
 
