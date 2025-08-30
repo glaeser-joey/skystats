@@ -1,19 +1,18 @@
 <script>
   import { IconSettings } from '@tabler/icons-svelte';
   import ThemeSelector from './components/ThemeSelector.svelte';
-  import GeneralStats from './components/GeneralStats.svelte';
   import AboveTimeline from './components/AboveTimeline.svelte';
   import TabRouteStats from './components/TabRouteStats.svelte';
   import TabMotionStats from './components/TabMotionStats.svelte';
   import TabInterestingStats from './components/TabInterestingStats.svelte';
   import TabActivity from './components/TabActivity.svelte';
 
-  let activeTab = 'route-stat';
+  let activeTab = 'activity';
   let tabsElement;
 
   const tabs = [
-    { name: 'route-stat', label: 'Route Information', component: TabRouteStats },
     { name: 'activity', label: 'Activity', component: TabActivity },
+    { name: 'route-stat', label: 'Route Information', component: TabRouteStats },
     { name: 'interesting-stat', label: 'Interesting Aircraft', component: TabInterestingStats },
     { name: 'motion-stat', label: 'Record Holders', component: TabMotionStats }
   ];
@@ -46,9 +45,6 @@
     </div>
   </div>
   <div class="navbar-center">
-    <!-- <h1 class="text-4xl font-bold bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
-      SkyStats
-    </h1> -->
     <h1 class="text-4xl font-normal text-primary drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
       SkyStats
     </h1>
@@ -73,10 +69,7 @@
 </div>
 
 <div class="container max-w-8xl mx-auto p-8">
-  <div class="grid grid-cols-1">
-    <GeneralStats />
-  </div>
-  <div class="grid grid-cols-1 mt-20 mb-10 gap-6">
+  <div class="grid grid-cols-1 mt-10 mb-15">
     <AboveTimeline />
   </div>
 

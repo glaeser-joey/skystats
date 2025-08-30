@@ -43,14 +43,17 @@ func (s *APIServer) Start() {
 		c.Next()
 	})
 
-	// API routes (must come before static routes)
+	// API routes
 	api := r.Group("/api")
 	{
 		stats := api.Group("/stats")
 		{
-			stats.GET("/general", s.getGeneralStats)
 			stats.GET("/above", s.getAboveStats)
 
+			stats.GET("/seen/flights", s.getFlightsSeenMetrics)
+			stats.GET("/seen/aircraft", s.getAircraftSeenMetrics)
+
+			stats.GET("/routes/metrics", s.getRouteMetrics)
 			stats.GET("/routes/airlines", s.getTopAirlines)
 			stats.GET("/routes/routes", s.getTopRoutes)
 			stats.GET("/routes/countries-destination", s.getTopDestinationCountries)
@@ -63,6 +66,7 @@ func (s *APIServer) Start() {
 			stats.GET("/motion/highest", s.getHighestAircraft)
 			stats.GET("/motion/lowest", s.getLowestAircraft)
 
+			stats.GET("/interesting/metrics", s.getInterestingMetrics)
 			stats.GET("/interesting/civilian", s.getCivilianAircraft)
 			stats.GET("/interesting/police", s.getPoliceAircraft)
 			stats.GET("/interesting/military", s.getMilitaryAircraft)
@@ -77,24 +81,24 @@ func (s *APIServer) Start() {
 		}
 	}
 
-	// Serve static files (must come after API routes)
+	// Serve static files
 	r.Static("/static", "../web")
 	r.StaticFile("/", "../web/index.html")
 
 	r.Run("0.0.0.0:" + s.port)
-}
 
-func (s *APIServer) getGeneralStats(c *gin.Context) {
+}
+func (s *APIServer) getFlightsSeenMetrics(c *gin.Context) {
 	stats := gin.H{}
 
-	// Total aircraft count
+	// Total flights count
 	var totalFlights int
 	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM aircraft_data").Scan(&totalFlights)
 	if err == nil {
 		stats["total_flights"] = totalFlights
 	}
 
-	// Today's aircraft count
+	// Today's flights count
 	var todayFlights int
 	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT COUNT(*) FROM aircraft_data WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayFlights)
@@ -102,7 +106,7 @@ func (s *APIServer) getGeneralStats(c *gin.Context) {
 		stats["today_flights"] = todayFlights
 	}
 
-	// Past hour aircraft count
+	// Past hour flights count
 	var hourFlights int
 	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT COUNT(*) FROM aircraft_data WHERE first_seen >= NOW() - INTERVAL '1 hour'").Scan(&hourFlights)
@@ -110,9 +114,46 @@ func (s *APIServer) getGeneralStats(c *gin.Context) {
 		stats["hour_flights"] = hourFlights
 	}
 
+	c.JSON(http.StatusOK, stats)
+
+}
+
+func (s *APIServer) getAircraftSeenMetrics(c *gin.Context) {
+	stats := gin.H{}
+
+	// Total aircraft count
+	var totalAircraft int
+	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(DISTINCT hex) FROM aircraft_data").Scan(&totalAircraft)
+	if err == nil {
+		stats["total_aircraft"] = totalAircraft
+	}
+
+	// Today's aircraft count
+	var todayAircraft int
+	err = s.pg.db.QueryRow(context.Background(),
+		"SELECT COUNT(DISTINCT hex) FROM aircraft_data WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayAircraft)
+	if err == nil {
+		stats["today_aircraft"] = todayAircraft
+	}
+
+	// Past hour aircraft count
+	var hourAircraft int
+	err = s.pg.db.QueryRow(context.Background(),
+		"SELECT COUNT(DISTINCT hex) FROM aircraft_data WHERE first_seen >= NOW() - INTERVAL '1 hour'").Scan(&hourAircraft)
+	if err == nil {
+		stats["hour_aircraft"] = hourAircraft
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
+
+func (s *APIServer) getRouteMetrics(c *gin.Context) {
+
+	stats := gin.H{}
+
 	// Total Routes
 	var total_routes int
-	err = s.pg.db.QueryRow(context.Background(),
+	err := s.pg.db.QueryRow(context.Background(),
 		`SELECT COUNT(*)
 			FROM aircraft_data a
 			INNER JOIN route_data r ON a.flight = r.route_callsign`).Scan(&total_routes)
@@ -149,38 +190,38 @@ func (s *APIServer) getGeneralStats(c *gin.Context) {
 		stats["unique_airports"] = uniqueAirports
 	}
 
-	// // Unique aircraft types
-	// var uniqueTypes int
-	// err = s.pg.db.QueryRow(context.Background(),
-	// 	"SELECT COUNT(DISTINCT t) FROM aircraft_data WHERE t IS NOT NULL AND t != ''").Scan(&uniqueTypes)
-	// if err == nil {
-	// 	stats["unique_aircraft_types"] = uniqueTypes
-	// }
+	c.JSON(http.StatusOK, stats)
 
-	// // Interesting aircraft count
-	// var interestingCount int
-	// err = s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft_seen").Scan(&interestingCount)
-	// if err == nil {
-	// 	stats["total_interesting"] = interestingCount
-	// }
+}
 
-	// // Today's interesting aircraft count
-	// var todayInterestingCount int
-	// err = s.pg.db.QueryRow(context.Background(),
-	// 	"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayInterestingCount)
-	// if err == nil {
-	// 	stats["today_interesting"] = todayInterestingCount
-	// }
+func (s *APIServer) getInterestingMetrics(c *gin.Context) {
+	stats := gin.H{}
 
-	// // Past hour interesting aircraft count
-	// var hourInterestingCount int
-	// err = s.pg.db.QueryRow(context.Background(),
-	// 	"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE first_seen >= NOW() - INTERVAL '1 hour'").Scan(&hourInterestingCount)
-	// if err == nil {
-	// 	stats["hour_interesting"] = hourInterestingCount
-	// }
+	// Interesting aircraft count
+	var interestingCount int
+	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft_seen").Scan(&interestingCount)
+	if err == nil {
+		stats["total_interesting"] = interestingCount
+	}
+
+	// Today's interesting aircraft count
+	var todayInterestingCount int
+	err = s.pg.db.QueryRow(context.Background(),
+		"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayInterestingCount)
+	if err == nil {
+		stats["today_interesting"] = todayInterestingCount
+	}
+
+	// Past hour interesting aircraft count
+	var hourInterestingCount int
+	err = s.pg.db.QueryRow(context.Background(),
+		"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE first_seen >= NOW() - INTERVAL '1 hour'").Scan(&hourInterestingCount)
+	if err == nil {
+		stats["hour_interesting"] = hourInterestingCount
+	}
 
 	c.JSON(http.StatusOK, stats)
+
 }
 
 func (s *APIServer) getAboveStats(c *gin.Context) {
