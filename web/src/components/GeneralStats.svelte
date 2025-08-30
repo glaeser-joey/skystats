@@ -58,7 +58,7 @@
         <span>No data available</span>
     </div>
 {:else}
-    <!-- Aircraft Seen Stats -->
+    <!-- Flights Seen Stats -->
     <div class="flex justify-center gap-10">
     <div class="p-2 stats stats-vertical lg:stats-horizontal bg-base-100 shadow-sm rounded-xl hover:shadow-md transition-all duration-200">
         <div class="stat">
@@ -67,8 +67,8 @@
                     <IconClock stroke={2}/>
                 </div>
             </div>
-            <div class="stat-title">Aircraft seen</div>
-            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.hour_aircraft} /></div>
+            <div class="stat-title">Flights seen</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.hour_flights} /></div>
             <div class="stat-desc">past hour</div>
         </div>
         <div class="stat">
@@ -77,8 +77,8 @@
                     <IconCalendar stroke={2}/>
                 </div>
             </div>
-            <div class="stat-title">Aircraft seen</div>
-            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.today_aircraft} /></div>
+            <div class="stat-title">Flights seen</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.today_flights} /></div>
             <div class="stat-desc">today</div>
         </div>
         <div class="stat">
@@ -87,8 +87,8 @@
                     <IconPlaneTilt stroke={2}/>
                 </div>
             </div>
-            <div class="stat-title">Aircraft seen</div>
-            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_aircraft} /></div>
+            <div class="stat-title">Flights seen</div>
+            <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_flights} /></div>
             <div class="stat-desc">all time</div>
         </div>
     </div>
@@ -102,7 +102,7 @@
                     <IconRoute stroke={2}/>
                 </div>
             </div>
-            <div class="stat-title">Aircraft with routes</div>
+            <div class="stat-title">Flights with routes</div>
             <div class="stat-value"><NumberFlow willChange={true} respectMotionPreference={false} value={data.total_routes} /></div>
             <div class="stat-desc">all time</div>
         </div>
