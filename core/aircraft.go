@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	cheapruler "github.com/JamesLMilner/cheap-ruler-go"
@@ -34,14 +35,28 @@ func updateAircraftDatabase(pg *postgres) {
 
 	for _, aircraft := range response.Aircraft {
 
+		// Filter out non-aircraft
+		if isNonAircraft(aircraft) {
+			continue
+		}
+
+		// Filter out aircraft not within radius
 		planeLoc := []float64{aircraft.Lon, aircraft.Lat}
 		distance := getRuler().Distance(loc, planeLoc)
 
 		if distance < getRadius() {
 			aircraftsInRange = append(aircraftsInRange, aircraft)
 		}
+
 	}
 	pg.updateDatabase(response.Now, aircraftsInRange)
+}
+
+func isNonAircraft(aircraft Aircraft) bool {
+	return aircraft.T == "TWR" ||
+		aircraft.R == "TWR" ||
+		strings.HasPrefix(aircraft.Category, "C") ||
+		aircraft.Squawk == "7777"
 }
 
 func getRuler() *cheapruler.CheapRuler {
