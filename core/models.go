@@ -49,6 +49,8 @@ type Aircraft struct {
 	Seen                float64 `json:"seen"`
 	Rssi                int     `json:"rssi"`
 	DbFlags             int     `json:"dbFlags"`
+	Squawk              string  `json:"squawk"`
+	Category            string  `json:"category"`
 	FirstSeen           time.Time
 	FirstSeenEpoch      float64
 	LastSeen            time.Time
