@@ -35,6 +35,7 @@ func updateAircraftDatabase(pg *postgres) {
 
 	for _, aircraft := range response.Aircraft {
 
+		// Filter out non-aircraft
 		if isNonAircraft(aircraft) {
 			continue
 		}
