@@ -56,8 +56,7 @@ func isNonAircraft(aircraft Aircraft) bool {
 	return aircraft.T == "TWR" ||
 		aircraft.R == "TWR" ||
 		strings.HasPrefix(aircraft.Category, "C") ||
-		aircraft.Squawk == "7777" ||
-		aircraft.Type == "tisb_other"
+		aircraft.Squawk == "7777"
 }
 
 func getRuler() *cheapruler.CheapRuler {
