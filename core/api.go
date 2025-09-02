@@ -67,10 +67,10 @@ func (s *APIServer) Start() {
 			stats.GET("/motion/lowest", s.getLowestAircraft)
 
 			stats.GET("/interesting/metrics", s.getInterestingMetrics)
-			stats.GET("/interesting/civilian", s.getCivilianAircraft)
-			stats.GET("/interesting/police", s.getPoliceAircraft)
-			stats.GET("/interesting/military", s.getMilitaryAircraft)
-			stats.GET("/interesting/government", s.getGovernmentAircraft)
+			stats.GET("/interesting/civilian", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Civ") })
+			stats.GET("/interesting/police", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Pol") })
+			stats.GET("/interesting/military", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Mil") })
+			stats.GET("/interesting/government", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Gov") })
 
 			stats.GET("/types/top", s.getTopAircraftTypes)
 
@@ -367,8 +367,27 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 	c.JSON(http.StatusOK, aircraft)
 }
 
-func (s *APIServer) getGroupedInterestingAircraft(c *gin.Context, query string, limit int) {
-	rows, err := s.pg.db.Query(context.Background(), query, limit)
+func (s *APIServer) getRecentInterestingAircraft(c *gin.Context, group string) {
+
+	limit := s.getLimit(c)
+
+	query := `
+		WITH latest_unique_reg AS (
+			SELECT DISTINCT ON (registration) icao, registration, 
+			operator, type, icao_type, "group", 
+			category, tag1, tag2, tag3, image_link_1, 
+			image_link_2, image_link_3,
+					hex, flight, seen, seen_epoch
+			FROM interesting_aircraft_seen
+			WHERE "group" = $1
+			ORDER BY registration, seen DESC
+		)
+		SELECT *
+		FROM latest_unique_reg
+		ORDER BY seen DESC
+		LIMIT $2`
+
+	rows, err := s.pg.db.Query(context.Background(), query, group, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -413,66 +432,6 @@ func (s *APIServer) getGroupedInterestingAircraft(c *gin.Context, query string, 
 	}
 
 	c.JSON(http.StatusOK, aircraft)
-}
-
-func (s *APIServer) getCivilianAircraft(c *gin.Context) {
-	limit := s.getLimit(c)
-
-	query := `
-		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
-			   hex, flight, seen, seen_epoch
-		FROM interesting_aircraft_seen 
-		WHERE "group" = 'Civ'
-		ORDER BY seen DESC 
-		LIMIT $1`
-
-	s.getGroupedInterestingAircraft(c, query, limit)
-}
-
-func (s *APIServer) getPoliceAircraft(c *gin.Context) {
-	limit := s.getLimit(c)
-
-	query := `
-		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
-			   hex, flight, seen, seen_epoch
-		FROM interesting_aircraft_seen 
-		WHERE "group" = 'Pol'
-		ORDER BY seen DESC 
-		LIMIT $1`
-
-	s.getGroupedInterestingAircraft(c, query, limit)
-}
-
-func (s *APIServer) getMilitaryAircraft(c *gin.Context) {
-	limit := s.getLimit(c)
-
-	query := `
-		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
-			   hex, flight, seen, seen_epoch
-		FROM interesting_aircraft_seen 
-		WHERE "group" = 'Mil'
-		ORDER BY seen DESC 
-		LIMIT $1`
-
-	s.getGroupedInterestingAircraft(c, query, limit)
-}
-
-func (s *APIServer) getGovernmentAircraft(c *gin.Context) {
-	limit := s.getLimit(c)
-
-	query := `
-		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
-			   hex, flight, seen, seen_epoch
-		FROM interesting_aircraft_seen 
-		WHERE "group" = 'Gov'
-		ORDER BY seen DESC 
-		LIMIT $1`
-
-	s.getGroupedInterestingAircraft(c, query, limit)
 }
 
 func (s *APIServer) getFastestAircraft(c *gin.Context) {
