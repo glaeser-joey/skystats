@@ -24,6 +24,4 @@
     title="Slowest Aircraft"
     {columns}
     icon={IconWalk}
-    iconColor="text-yellow-600"
-    iconBgColor="bg-yellow-100"
 />

@@ -24,6 +24,4 @@
     title="Lowest Aircraft"
     {columns}
     icon={IconArrowDownDashed}
-    iconColor="text-blue-500"
-    iconBgColor="bg-blue-100"
 />

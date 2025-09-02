@@ -6,8 +6,6 @@
     export let title;
     export let columns = [];
     export let icon = null;
-    export let iconColor = '';
-    export let iconBgColor = '';
 
     let refreshRate = 60000
     let data = [];
