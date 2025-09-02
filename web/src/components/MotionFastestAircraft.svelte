@@ -24,6 +24,4 @@
     title="Fastest Aircraft"
     {columns}
     icon={IconRocket}
-    iconColor="text-red-500"
-    iconBgColor="bg-red-100"
 />

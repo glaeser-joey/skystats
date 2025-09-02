@@ -24,6 +24,4 @@
     title="Highest Aircraft"
     {columns}
     icon={IconArrowUpDashed}
-    iconColor="text-green-500"
-    iconBgColor="bg-green-100"
 />
