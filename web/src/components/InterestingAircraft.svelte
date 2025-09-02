@@ -104,10 +104,10 @@
                         <tbody>
                             {#each data as aircraft}
                             <tr class="hover:bg-base-300 cursor-pointer" on:click={() => showAircraftModal(aircraft)}>
-                                <td class="font-mono">{aircraft.registration}</td>
+                                <td class="font-mono whitespace-nowrap">{aircraft.registration}</td>
                                 <td>{aircraft.operator}</td>
                                 <td>{aircraft.type}</td>
-                                <td>{aircraft.seen ? new Date(aircraft.seen).toLocaleString() : '-'}</td>
+                                <td class="whitespace-nowrap">{aircraft.seen ? new Date(aircraft.seen).toLocaleString() : '-'}</td>
                             </tr>
                             {/each}
                         </tbody>
