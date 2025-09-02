@@ -3,7 +3,7 @@
     import { IconRocket } from '@tabler/icons-svelte';
 
     const columns = [
-        { header: 'Reg', field: 'registration', class: 'font-mono' },
+        { header: 'Reg', field: 'registration', class: 'font-mono whitespace-nowrap' },
         { header: 'Type', field: 'type' },
         // { header: 'Flight', field: 'flight' },
         { 
@@ -14,6 +14,7 @@
         { 
             header: 'First Seen', 
             field: 'first_seen',
+            class: 'whitespace-nowrap',
             formatter: (value) => value ? new Date(value).toLocaleString() : '-'
         }
     ];
