@@ -1121,8 +1121,8 @@ func (s *APIServer) getChartAircraftOverTime(c *gin.Context, period string) {
 		periodUnit = "hour"
 		query = `WITH end_hour AS (
 				SELECT
-					date_trunc('hour', CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AS h,
-					CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AS now
+					date_trunc('hour', CURRENT_TIMESTAMP) AS h,
+					CURRENT_TIMESTAMP AS now
 				)
 				SELECT
 				gs AS hour,
@@ -1134,7 +1134,7 @@ func (s *APIServer) getChartAircraftOverTime(c *gin.Context, period string) {
 				) AS gs
 				LEFT JOIN (
 				SELECT
-					date_trunc('hour', first_seen AT TIME ZONE 'UTC') AS hour,
+					date_trunc('hour', first_seen) AS hour,
 					COUNT(DISTINCT hex) AS count
 				FROM aircraft_data, end_hour
 				WHERE first_seen >= (SELECT h FROM end_hour) - interval '23 hours'

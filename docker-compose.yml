@@ -24,7 +24,6 @@ services:
       - RADIUS=${RADIUS}
       - ABOVE_RADIUS=${ABOVE_RADIUS}
       - DOMESTIC_COUNTRY_ISO=${DOMESTIC_COUNTRY_ISO}
-      - TZ=${TZ}
 
   skystats-web:
     image: node:20-alpine
@@ -38,7 +37,6 @@ services:
     environment:
       - NODE_ENV=development
       - DOCKER_ENV=true
-      - TZ=${TZ}
     command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0"
     depends_on:
       - skystats-api
@@ -54,7 +52,6 @@ services:
         - DB_USER=${DB_USER}
         - DB_PASSWORD=${DB_PASSWORD}
         - DB_NAME=${DB_NAME}
-        - TZ=${TZ}
       volumes:
         - ./scripts:/app
       working_dir: /app
@@ -74,7 +71,6 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - TZ=${TZ}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql
