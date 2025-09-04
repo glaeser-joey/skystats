@@ -37,7 +37,7 @@ func updateRegistrations(pg *postgres) {
 		}
 
 		if registration.Response.Aircraft.ModeS == "" {
-			fmt.Printf("No registration found for %s", aircraft.Hex)
+			fmt.Printf("No registration found for %s \n", aircraft.Hex)
 			existing = append(existing, aircraft)
 			continue
 		}
