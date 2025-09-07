@@ -1,0 +1,1 @@
+ALTER TABLE interesting_aircraft ADD COLUMN commit_hash VARCHAR(40);

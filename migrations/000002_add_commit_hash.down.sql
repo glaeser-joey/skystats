@@ -1,0 +1,1 @@
+ALTER TABLE interesting_aircraft DROP COLUMN commit_hash;
