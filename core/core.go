@@ -20,7 +20,7 @@ func main() {
 		}
 	}
 
-	// Skip daemonization if running in Docker
+	// If running outside of docker, run as a daemon
 	if os.Getenv("DOCKER_ENV") != "true" {
 		cntxt := &daemon.Context{
 			PidFileName: "skystats.pid",
@@ -40,10 +40,14 @@ func main() {
 			return
 		}
 		defer cntxt.Release()
+
+		log.Print("Skystats: Running in daemon mode")
 	}
 
-	log.Print("- - - - - - - - - - - - - - -")
-	log.Print("daemon started")
+	// Welcome to skystats
+	if banner, err := os.ReadFile("../docs/logo/skystats_ascii.txt"); err == nil {
+		log.Print("\n" + string(banner))
+	}
 
 	url := GetConnectionUrl()
 	log.Printf("Connecting to database: %s", url)
@@ -51,6 +55,13 @@ func main() {
 	pg, err := NewPG(context.Background(), url)
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Setup db
+	log.Println("Running database initialisation / migrations...")
+	if err := RunDatabaseMigrations(); err != nil {
+		log.Printf("Error initialising or migrating the database: %v", err)
 		os.Exit(1)
 	}
 
