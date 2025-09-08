@@ -41,27 +41,6 @@ services:
     depends_on:
       - skystats-api
 
-  skystats-db-init:
-      image: python:3.11-slim
-      container_name: skystats-db-init
-      depends_on:
-        - skystats-db
-      environment:
-        - DB_HOST=${DB_HOST}
-        - DB_PORT=${DB_PORT}
-        - DB_USER=${DB_USER}
-        - DB_PASSWORD=${DB_PASSWORD}
-        - DB_NAME=${DB_NAME}
-      volumes:
-        - ./scripts:/app
-      working_dir: /app
-      command: >
-        bash -c "
-          pip install --no-cache-dir pandas python-dotenv sqlalchemy psycopg2-binary &&
-          python plane-alert-db.py
-        "
-      restart: "no"
-
   skystats-db:
     image: postgres:latest
     container_name: skystats-db
