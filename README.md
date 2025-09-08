@@ -77,19 +77,19 @@
 
 If you live in an area where you frequently see planes that you are not interested in, you can provide a custom version of [plane-alert-db](https://github.com/sdr-enthusiasts/plane-alert-db).
 
+This expects a file identical in structure to https://github.com/sdr-enthusiasts/plane-alert-db/blob/main/plane-alert-db-images.csv
+
 Add the following the the `.env` file:
 ```
 PLANE_DB_URL=some/custom/location/plane-alert-db.csv
-IMAGE_DB_URL=some/custom/location/plane_images.csv
 ```
 
 And the following to `docker-compose.yml` under the `skystats-db-init` service:
 ```
 - PLANE_DB_URL=${PLANE_DB_URL}
-- IMAGE_DB_URL=${IMAGE_DB_URL}
 ```
 
-**⚠️ The format of the csv must match the format of plane-alert-db**
+**⚠️ The format of the csv must match the format of combined plane data + image file from plane-alert-db**
 
 <br/>
 

@@ -1,0 +1,2 @@
+ALTER TABLE interesting_aircraft DROP COLUMN commit_hash;
+ALTER TABLE interesting_aircraft DROP CONSTRAINT interesting_aircraft_icao_unique;

@@ -11,5 +11,6 @@ FROM alpine:latest
 WORKDIR /app/core
 COPY --from=builder /app/skystats .
 COPY --from=builder /app/web /app/web
+COPY --from=builder /app/migrations /app/migrations
 
 CMD ["./skystats"]

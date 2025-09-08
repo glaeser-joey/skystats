@@ -107,4 +107,10 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+
+  /* Override the divider for DaisyUI list component, as its stopped working in recent versions */
+  :global(.soft-divider > :not(:last-child).list-row)::after,
+  :global(.soft-divider > :not(:last-child) .list-row)::after {
+    opacity: 0.05 !important;
+  }
 </style>
