@@ -50,8 +50,7 @@ func main() {
 	}
 
 	url := GetConnectionUrl()
-	log.Printf("Connecting to database: %s", url)
-
+	log.Printf("Connecting to postgres database...")
 	pg, err := NewPG(context.Background(), url)
 	if err != nil {
 		fmt.Println(err)
@@ -65,7 +64,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Println("Updating database with plane-alert-db data...")
+	if err := UpsertPlaneAlertDb(pg); err != nil {
+		log.Printf("Error updating interesting aircraft data: %v", err)
+		os.Exit(1)
+	}
+
 	// Start API server in a separate goroutine
+	log.Println("Starting API server...")
 	go func() {
 		apiServer := NewAPIServer(pg)
 		apiServer.Start()
