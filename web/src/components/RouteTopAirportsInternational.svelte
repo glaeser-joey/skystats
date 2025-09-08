@@ -50,7 +50,7 @@
         <span>No data available</span>
     </div>
 {:else}
-    <ul class="list bg-base-100 rounded-box shadow-md">
+    <ul class="list bg-base-100 rounded-box shadow-md soft-divider">
     <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Top International Airports</li>
 
     {#each data as airport, index}
