@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - skystats-db-init
+      - skystats-db
     environment:
       # Docker environment flag (used to skip daemonising the app when in Docker)
       - DOCKER_ENV=true
