@@ -30,7 +30,7 @@ type Row struct {
 	Image4       *string
 }
 
-type GitHubCommitResponse struct {
+type GitHubAPIResponse struct {
 	Files []struct {
 		SHA      string `json:"sha"`
 		Filename string `json:"filename"`
@@ -196,7 +196,7 @@ func checkForUpdates(pg *postgres, isCustom bool) (needsUpdating bool, commitHas
 		return false, "", fmt.Errorf("Error checking for interesting_aircraft table: %w", err)
 	}
 
-	// If empty, then always needs updating
+	// If exists and is empty, then always needs updating
 	var count int
 	err = pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft").Scan(&count)
 	if err != nil {
@@ -205,7 +205,7 @@ func checkForUpdates(pg *postgres, isCustom bool) (needsUpdating bool, commitHas
 
 	if count == 0 {
 		return true, "", nil
-	} else if isCustom { // If not empty and custom, skip updates
+	} else if isCustom { // If not empty and custom, skip updates, abort
 		return false, "", nil
 	}
 
@@ -240,7 +240,7 @@ func getLatestCommitHash() (string, error) {
 		return "", fmt.Errorf("Error reading response body for latest commit hash for plane-alert-db: %w", err)
 	}
 
-	var commitResponse GitHubCommitResponse
+	var commitResponse GitHubAPIResponse
 	err = json.Unmarshal(body, &commitResponse)
 	if err != nil {
 		return "", fmt.Errorf("Error parsing JSON response for latest commit hash: %w", err)
