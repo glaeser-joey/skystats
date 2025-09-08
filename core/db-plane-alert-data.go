@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -210,7 +211,7 @@ func checkForUpdates(pg *postgres, isCustom bool) (needsUpdating bool, commitHas
 	}
 
 	// Otherwise, check if newer commit hash
-	var existingCommitHash string
+	var existingCommitHash sql.NullString
 	err = pg.db.QueryRow(context.Background(), "SELECT commit_hash FROM interesting_aircraft LIMIT 1").Scan(&existingCommitHash)
 	if err != nil {
 		return false, "", fmt.Errorf("Error checking interesting_aircraft table: %w", err)
@@ -221,7 +222,7 @@ func checkForUpdates(pg *postgres, isCustom bool) (needsUpdating bool, commitHas
 		return false, "", fmt.Errorf("Error getting latest commit hash: %w", err)
 	}
 
-	if latestCommitHash != existingCommitHash {
+	if !existingCommitHash.Valid || latestCommitHash != existingCommitHash.String {
 		return true, latestCommitHash, nil
 	}
 
