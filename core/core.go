@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+
+	checkFlags()
 
 	// Load .env file
 	if err := godotenv.Load("../.env"); err != nil {
@@ -113,4 +116,11 @@ func main() {
 		}
 	}
 
+}
+
+func checkFlags() {
+	flag.Parse()
+	if showVersion {
+		showVersionExit()
+	}
 }
