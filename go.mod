@@ -4,9 +4,6 @@ go 1.23.0
 
 toolchain go1.23.10
 
-// replace skystats/fetch => ../fetch
-// require skystats/fetch v0.0.0-00010101000000-000000000000
-
 require github.com/JamesLMilner/cheap-ruler-go v0.0.0-20191212211616-0919b75413a9
 
 require (
