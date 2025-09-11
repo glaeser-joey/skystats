@@ -5,7 +5,7 @@
 
 
     let data = [];
-    let endpoint = '/api/stats/routes/countries-origin'
+    let endpoint = 'api/stats/routes/countries-origin'
     let loading = true;
     let error = null;
     let interval = null;

@@ -3,7 +3,7 @@
     import SkeletonRouteTable from './SkeletonRouteTable.svelte';
 
     let data = [];
-    let endpoint = '/api/stats/routes/airports-domestic'
+    let endpoint = 'api/stats/routes/airports-domestic'
     let loading = true;
     let error = null;
     let interval = null;

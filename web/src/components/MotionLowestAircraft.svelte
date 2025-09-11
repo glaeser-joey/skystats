@@ -20,7 +20,7 @@
 </script>
 
 <MotionStats 
-    endpoint="/api/stats/motion/lowest"
+    endpoint="api/stats/motion/lowest"
     title="Lowest Aircraft"
     {columns}
     icon={IconArrowDownDashed}

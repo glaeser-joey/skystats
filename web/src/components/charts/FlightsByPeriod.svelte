@@ -20,7 +20,7 @@
 
     /* Data setup */
 
-    const endpoint = `/api/stats/charts/${type}/${period}`;
+    const endpoint = `api/stats/charts/${type}/${period}`;
 
     async function fetchData() {
         try {

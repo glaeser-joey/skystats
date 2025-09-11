@@ -20,7 +20,7 @@
 </script>
 
 <MotionStats 
-    endpoint="/api/stats/motion/highest"
+    endpoint="api/stats/motion/highest"
     title="Highest Aircraft"
     {columns}
     icon={IconArrowUpDashed}

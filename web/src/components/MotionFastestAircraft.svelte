@@ -21,7 +21,7 @@
 </script>
 
 <MotionStats 
-    endpoint="/api/stats/motion/fastest"
+    endpoint="api/stats/motion/fastest"
     title="Fastest Aircraft"
     {columns}
     icon={IconRocket}

@@ -20,7 +20,7 @@
 </script>
 
 <MotionStats 
-    endpoint="/api/stats/motion/slowest"
+    endpoint="api/stats/motion/slowest"
     title="Slowest Aircraft"
     {columns}
     icon={IconWalk}
