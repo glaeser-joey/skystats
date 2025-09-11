@@ -6,7 +6,7 @@
 
 
     let data = {};
-    let endpoint = '/api/stats/seen/aircraft'
+    let endpoint = 'api/stats/seen/aircraft'
     let loading = true;
     let error = null;
     let interval = null;

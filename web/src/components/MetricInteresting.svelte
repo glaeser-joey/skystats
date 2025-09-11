@@ -5,7 +5,7 @@
     import SkeletonMetrics from './SkeletonMetrics.svelte';
 
     let data = {};
-    let endpoint = '/api/stats/interesting/metrics'
+    let endpoint = 'api/stats/interesting/metrics'
     let loading = true;
     let error = null;
     let interval = null;
