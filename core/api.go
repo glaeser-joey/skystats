@@ -44,7 +44,7 @@ func (s *APIServer) Start() {
 	})
 
 	// API routes
-	api := r.Group("/api")
+	api := r.Group("api")
 	{
 		stats := api.Group("/stats")
 		{

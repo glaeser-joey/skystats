@@ -2,7 +2,7 @@
     import { onMount, onDestroy } from 'svelte';
 
     let data = [];
-    let endpoint = '/api/stats/types/top'
+    let endpoint = 'api/stats/types/top'
     let loading = true;
     let error = null;
     let interval = null;
