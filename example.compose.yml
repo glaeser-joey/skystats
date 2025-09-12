@@ -1,0 +1,41 @@
+services:
+  skystats:
+    image: ghcr.io/tomcarman/skystats:latest
+    depends_on:
+      skystats-db:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    container_name: skystats
+    hostname: skystats
+    environment:
+      # ADSB
+      - READSB_AIRCRAFT_JSON=${READSB_AIRCRAFT_JSON}
+      # PostgreSQL
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      # App
+      - LAT=${LAT}
+      - LON=${LON}
+      - RADIUS=${RADIUS}
+      - ABOVE_RADIUS=${ABOVE_RADIUS}
+      - DOMESTIC_COUNTRY_ISO=${DOMESTIC_COUNTRY_ISO}
+
+  skystats-db:
+    image: postgres:latest
+    container_name: skystats-db
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s

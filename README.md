@@ -34,10 +34,10 @@
 ## Setup
 
 ### Running in Docker (recommended)
-* Clone this repository
 * Copy the contents of `.env.example` into a new file called `.env`
 * Populate `.env` with all required values. See [Environment Variables](#environment-variables)
-* Run `docker compose up -d --build`
+* Download example.compose.yml and name it compose.yml
+* Run `docker compose up -d`
 * The interface should be available on `localhost:5173` where localhost is the IP of the docker host
 
 ### Running locally (e.g. to develop)
