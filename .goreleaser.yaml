@@ -34,6 +34,14 @@ checksum:
 
 changelog:
   use: github
+  filters:
+    exclude:
+      - "^docs?:"
+      - "^chore:"
+      - "^test:"
+      - "^ci:"
+      - "merge pull request"
+      - "merge branch"
 
 release:
   draft: false
