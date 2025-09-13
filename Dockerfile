@@ -4,7 +4,11 @@ WORKDIR /app
 COPY go.mod go.sum /app
 COPY core /app/core
 RUN go mod download
-RUN go build -o skystats ./core
+ARG VERSION=dev
+ARG COMMIT=none
+ARG DATE=unknown
+RUN DATE="${DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}" && \
+    go build -ldflags "-s -w -X main.version=${VERSION:-dev} -X main.commit=${COMMIT:-none} -X main.date=${DATE}" -o skystats ./core
 
 
 FROM node:20-alpine AS node
