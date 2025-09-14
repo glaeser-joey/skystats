@@ -6,6 +6,7 @@
   import TabMotionStats from './components/TabMotionStats.svelte';
   import TabInterestingStats from './components/TabInterestingStats.svelte';
   import TabActivity from './components/TabActivity.svelte';
+  import Footer from './components/Footer.svelte';
 
   let activeTab = 'activity';
   let tabsElement;
@@ -95,6 +96,8 @@
       </div>
     {/each}
   </div>
+
+  <Footer />
 </div>
 
 <style>
