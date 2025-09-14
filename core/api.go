@@ -83,6 +83,8 @@ func (s *APIServer) Start() {
 			stats.GET("/charts/aircraft/day", func(c *gin.Context) { s.getChartAircraftOverTime(c, "day") })
 
 		}
+
+		api.GET("/version", s.getVersion)
 	}
 
 	// Serve static files
@@ -1260,6 +1262,14 @@ func (s *APIServer) getTopInternationalAirports(c *gin.Context) {
 
 	c.JSON(http.StatusOK, results)
 
+}
+
+func (s *APIServer) getVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"version": version,
+		"commit":  commit,
+		"date":    date,
+	})
 }
 
 func (s *APIServer) getLimit(c *gin.Context) int {
