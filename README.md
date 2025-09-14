@@ -5,7 +5,7 @@
 <div align="center">
     SkyStats is an application to retrieve, store, and display interesting aircraft ADS-B data received via an SDR.
     </br></br>
-    ⚠️ <b>Skystats is still in early developement and considered "beta" - so expect bugs and instability.</b>
+    ⚠️ kystats is still in early developeent and considered "beta" -o eexpect bugs and instability.
 </div>
 </br>
 
