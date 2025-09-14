@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -25,12 +26,15 @@ func main() {
 
 	// If running outside of docker, run as a daemon
 	if os.Getenv("DOCKER_ENV") != "true" {
+		execPath, _ := os.Executable()
+		execDir := filepath.Dir(execPath)
+
 		cntxt := &daemon.Context{
-			PidFileName: "skystats.pid",
+			PidFileName: filepath.Join(execDir, "skystats.pid"),
 			PidFilePerm: 0644,
-			LogFileName: "skystats.log",
+			LogFileName: filepath.Join(execDir, "skystats.log"),
 			LogFilePerm: 0640,
-			WorkDir:     "./",
+			WorkDir:     execDir,
 			Umask:       027,
 		}
 
