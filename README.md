@@ -4,7 +4,11 @@
 </br>
 <div align="center">
     SkyStats is an application to retrieve, store, and display interesting aircraft ADS-B data received via an SDR.
+    </br></br>
+    ⚠️ <b>Skystats is still in early developement and considered "beta" - so expect bugs and instability.</b>
 </div>
+</br>
+
 
 ## Overview
 
@@ -34,24 +38,17 @@
 ## Setup
 
 ### Running in Docker (recommended)
-* Copy the contents of `.env.example` into a new file called `.env`
+
+Using SkyStats in Docker is the easiest way to get up and running.
+
+* Copy the contents of [`.env.example`](.env.example) into a new file called `.env`
 * Populate `.env` with all required values. See [Environment Variables](#environment-variables)
-* Download example.compose.yml and name it compose.yml
+* Download [`example.compose.yml`](example.compose.yml) and name it compose.yml
 * Run `docker compose up -d`
 * The interface should be available on `localhost:5173` where localhost is the IP of the docker host
 
-### Running locally (e.g. to develop)
-* Clone this repository
-* Create the postgres database (e.g. in a Docker container) - `/scripts/schema.sql` can be used to initialise the database
-* Copy the contents of `.env.example` into a new file called `.env`
-* Populate `.env` with all required values. See [Environment Variables](#environment-variables)
-* Change to the `core` folder e.g. `cd core`
-* Compile with `go build -o skystats-daemon`
-* Run the app `./skystats-daemon`
-    * It can be terminated via `kill $(cat skystats/core/skystats.pid)`
-* Run the webserver 
-    * Change to the /web directory e.g. `cd ../web`
-    * Start the webserver with `npm run dev -- --host`
+Alternatively there are some [Advanced Setup](#advanced-setup) options.
+</br>
 
 ### Environment Variables
 
@@ -70,6 +67,40 @@
 | ABOVE_RADIUS | Radius for the "Above Timeline" <br/> **Note: currently only 20km supported.** | `20` |
 
 <br/>
+
+## Support / Feeback
+
+SkyStats is still under early active development. If you're having issues getting it running, or have suggestions/feedback, then the best place to get support is on the [#skystats](https://discord.gg/znkBr2eyev) channel in the [SDR Enthusiasts Discord](https://discord.gg/86Tyxjcd94). Alternatively you can raise an [Issue](https://github.com/tomcarman/skystats/issues) in GitHub, and I'll do my best to support.
+</br>
+
+
+## Advanced Setup
+
+The intention is for SkyStats to be run via the [provided Docker containers](#setup). However, if you want to run locally or if you want to contribute by developing, see below guidance.
+
+### Running locally
+
+* BYO postgres database (in a Docker container or other)
+* Copy the contents of [`.env.example`](.env.example) into a new file called `.env`
+* Populate `.env` with all required values. See [Environment Variables](#environment-variables)
+* Download the latest [release binary](https://github.com/tomcarman/skystats/releases) for your OS/arch
+* Execute e.g. `./skystats`
+* TODO: Instructions to run the webserver
+
+
+### Compile from source (e.g. to develop)
+* BYO postgres database (in a Docker container or other)
+* Clone this repository
+* Copy the contents of `.env.example` into a new file called `.env`
+* Populate `.env` with all required values. See [Environment Variables](#environment-variables)
+* Change to the `core` folder e.g. `cd core`
+* Compile with `go build -o skystats-daemon`
+* Run the app `./skystats-daemon`
+    * It can be terminated via `kill $(cat skystats/core/skystats.pid)`
+* Run the webserver 
+    * Change to the /web directory e.g. `cd ../web`
+    * Start the webserver with `npm run dev -- --host`
+* See [`build`](/scripts/build) for a script to automate some of this
 
 ## Advanced Use Cases
 
