@@ -9,7 +9,7 @@
         loading = true;
         error = null;
         try {
-            const res = await fetch('/api/version');
+            const res = await fetch('api/version');
             if (!res.ok) {
                 throw new Error(`Error fetching data: ${res.status} ${res.statusText}`);
             }
