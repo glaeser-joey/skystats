@@ -42,6 +42,7 @@ changelog:
       - "^ci:"
       - "merge pull request"
       - "merge branch"
+      - "Merge pull request"
 
 release:
   draft: false

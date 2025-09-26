@@ -25,7 +25,7 @@ services:
       - DOMESTIC_COUNTRY_ISO=${DOMESTIC_COUNTRY_ISO}
 
   skystats-db:
-    image: postgres:latest
+    image: postgres:17
     container_name: skystats-db
     environment:
       - POSTGRES_USER=${DB_USER}
