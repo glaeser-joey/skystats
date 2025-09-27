@@ -72,7 +72,10 @@ func (s *APIServer) Start() {
 			stats.GET("/interesting/military", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Mil") })
 			stats.GET("/interesting/government", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Gov") })
 
-			stats.GET("/types/top", s.getTopAircraftTypes)
+			stats.GET("/types/top", func(c *gin.Context) { s.getTopAircraftTypes(c, "all") })
+			stats.GET("/types/top/year", func(c *gin.Context) { s.getTopAircraftTypes(c, "year") })
+			stats.GET("/types/top/month", func(c *gin.Context) { s.getTopAircraftTypes(c, "month") })
+			stats.GET("/types/top/day", func(c *gin.Context) { s.getTopAircraftTypes(c, "day") })
 
 			stats.GET("/charts/flights/year", func(c *gin.Context) { s.getChartFlightsOverTime(c, "year") })
 			stats.GET("/charts/flights/month", func(c *gin.Context) { s.getChartFlightsOverTime(c, "month") })
@@ -616,17 +619,31 @@ func (s *APIServer) getLowestAircraft(c *gin.Context) {
 	c.JSON(http.StatusOK, aircraft)
 }
 
-func (s *APIServer) getTopAircraftTypes(c *gin.Context) {
+func (s *APIServer) getTopAircraftTypes(c *gin.Context, period string) {
+	var query string
+	var timeFilter string
 
-	query := `SELECT 
+	switch period {
+	case "year":
+		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 year'`
+	case "month":
+		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 month'`
+	case "day":
+		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 day'`
+	default:
+		timeFilter = ""
+	}
+
+	query = `SELECT
 					t,
 					count,
 					ROUND(count * 100.0 / SUM(count) OVER(), 0) as percentage
 				FROM (
 					SELECT t, Count(t) as count
-					FROM aircraft_data 
-					GROUP BY t 
-					ORDER BY Count(t) DESC 
+					FROM aircraft_data
+					` + timeFilter + `
+					GROUP BY t
+					ORDER BY Count(t) DESC
 					LIMIT 10
 				) top_10
 				ORDER BY count DESC`
