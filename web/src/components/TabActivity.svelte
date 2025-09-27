@@ -3,6 +3,7 @@
   import ActivityAircraftByPeriod from "./ActivityAircraftByPeriod.svelte";
   import MetricAircraftSeen from "./MetricAircraftSeen.svelte";
   import MetricFlightsSeen from "./MetricFlightsSeen.svelte";
+  import TypesTop from './TypesTop.svelte';
 </script>
 
 <div class="grid grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 mt-10 gap-6">
@@ -17,5 +18,8 @@
   </div>
   <div class="col">
     <ActivityAircraftByPeriod />
+  </div>
+  <div class="col">
+    <TypesTop />
   </div>
 </div>

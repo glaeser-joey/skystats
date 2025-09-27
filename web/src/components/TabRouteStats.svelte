@@ -14,5 +14,4 @@
     <RouteTopRoutes />
     <RouteTopCountriesOrigin />
     <RouteTopCountriesDestination />
-    <!-- <TypesTop /> -->
   </div>

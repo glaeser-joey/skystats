@@ -15,7 +15,7 @@
                 throw new Error(`${response.status}`);
             }
             const result = await response.json();
-            data = result;
+            data = result.filter(aircraft => aircraft.aircraft_type);
             error = null;
         } catch (err) {
             error = err.message;
@@ -48,7 +48,7 @@
 {:else if data.length === 0}
     <div class="alert alert-info">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <span>No data available</span>
+        <span>No Top Types data available</span>
     </div>
 {:else}
     <ul class="list bg-base-100 rounded-box shadow-md">
@@ -56,18 +56,19 @@
 
     {#each data as type, index}
     <li class="list-row">
-        <a href="https://skybrary.aero/aircraft/{type.aircraft_type}" target="_blank" rel="noopener noreferrer" class="badge badge-accent badge-soft badge-outline badge-xl rounded-md hover:badge-accent">
-            <span class="text-lg font-mono font-semibold uppercase tracking-wider">{type.aircraft_type}</span>
-        </a>
-
-        <div class="list-col-grow">
-            <progress class="progress progress-accent w-65" value="{type.percentage}" max="100"></progress>
+        <div class="flex items-center justify-center">
+            <div class="opacity-80"><a href="https://skybrary.aero/aircraft/{type.aircraft_type}" target="_blank" rel="noopener noreferrer" class="badge badge-accent badge-soft badge-outline badge-md sm:badge-lg md:badge-xl lg:badge-2xl rounded-md hover:badge-accent">
+            <span class="!text-md sm:!text-lg md:!text-xl lg:!text-2xl font-thin text-accent opacity-80 font-mono">{type.aircraft_type}</span>
+        </a></div>
+        </div>
+        <div class="flex flex-col justify-center list-col-grow">
+            <progress class="progress progress-accent w-auto" value="{type.percentage}" max="100"></progress>
         </div>
         <div class="text-right">
             <div class="font-semibold">{type.count.toLocaleString()}</div>
-            <div class="text-xs opacity-60">flights</div>
+            <div class="text-xs opacity-60">aircraft</div>
         </div>
         </li>
     {/each}
     </ul>
-{/if}      
+{/if}
