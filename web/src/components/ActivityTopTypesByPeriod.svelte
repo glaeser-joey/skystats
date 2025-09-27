@@ -33,6 +33,14 @@
           bind:group={selectedTab}
           value={2}
         />
+        <input
+          type="radio"
+          name="activity_tabs"
+          class="tab"
+          aria-label="All"
+          bind:group={selectedTab}
+          value={3}
+        />
     </div>
     </div>
       {#if selectedTab === 0}
@@ -41,6 +49,8 @@
           <TypesByPeriod period="month"/>
       {:else if selectedTab === 2}
           <TypesByPeriod period="year"/>
+      {:else if selectedTab === 3}
+          <TypesByPeriod period="all"/>
       {/if}
   </div>
 </div>

@@ -5,8 +5,8 @@
     let loading = true;
     let error = null;
     let interval = null;
-    export let period = 'day'; // 'year', 'month', or 'day'
-    let endpoint = 'api/stats/types/top/' + period
+    export let period = 'day'; // 'all','year', 'month', or 'day'
+    let endpoint = period === 'all' ? 'api/stats/types/top' : 'api/stats/types/top/' + period
 
     async function fetchData() {
 
