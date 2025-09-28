@@ -1,12 +1,14 @@
 <script>
     import TypesByPeriod from './charts/TypesByPeriod.svelte';
+    export let aircraftorflight = 'flights';
     let selectedTab = 0;
+    let title = aircraftorflight === 'flights' ? 'Flights Seen' : 'Unique Aircraft Seen';
 </script>
 
 <div class="bg-base-100 rounded-box shadow-md pt-6 p-8">
     <div>
       <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-extralight tracking-wider ">Aircraft Types Seen</h2>
+      <h2 class="text-2xl font-extralight tracking-wider ">{title}</h2>
       <div class="tabs tabs-box">
         <input
           type="radio"
@@ -44,13 +46,13 @@
     </div>
     </div>
       {#if selectedTab === 0}
-          <TypesByPeriod period="day"/>
+          <TypesByPeriod period="day" aircraftorflight={aircraftorflight}/>
       {:else if selectedTab === 1}
-          <TypesByPeriod period="month"/>
+          <TypesByPeriod period="month" aircraftorflight={aircraftorflight}/>
       {:else if selectedTab === 2}
-          <TypesByPeriod period="year"/>
+          <TypesByPeriod period="year" aircraftorflight={aircraftorflight}/>
       {:else if selectedTab === 3}
-          <TypesByPeriod period="all"/>
+          <TypesByPeriod period="all" aircraftorflight={aircraftorflight}/>
       {/if}
   </div>
 </div>

@@ -20,6 +20,9 @@
     <ActivityAircraftByPeriod />
   </div>
   <div class="col">
-    <ActivityTopTypesByPeriod />
+    <ActivityTopTypesByPeriod aircraftorflight="flights"/>
+  </div>
+  <div class="col">
+    <ActivityTopTypesByPeriod aircraftorflight="aircraft"/>
   </div>
 </div>

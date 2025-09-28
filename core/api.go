@@ -72,10 +72,15 @@ func (s *APIServer) Start() {
 			stats.GET("/interesting/military", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Mil") })
 			stats.GET("/interesting/government", func(c *gin.Context) { s.getRecentInterestingAircraft(c, "Gov") })
 
-			stats.GET("/types/top", func(c *gin.Context) { s.getTopAircraftTypes(c, "all") })
-			stats.GET("/types/top/year", func(c *gin.Context) { s.getTopAircraftTypes(c, "year") })
-			stats.GET("/types/top/month", func(c *gin.Context) { s.getTopAircraftTypes(c, "month") })
-			stats.GET("/types/top/day", func(c *gin.Context) { s.getTopAircraftTypes(c, "day") })
+			stats.GET("/types/flights/all", func(c *gin.Context) { s.getTopAircraftTypes(c, "all", "flights") })
+			stats.GET("/types/flights/year", func(c *gin.Context) { s.getTopAircraftTypes(c, "year", "flights") })
+			stats.GET("/types/flights/month", func(c *gin.Context) { s.getTopAircraftTypes(c, "month", "flights") })
+			stats.GET("/types/flights/day", func(c *gin.Context) { s.getTopAircraftTypes(c, "day", "flights") })
+
+			stats.GET("/types/aircraft/all", func(c *gin.Context) { s.getTopAircraftTypes(c, "all", "aircraft") })
+			stats.GET("/types/aircraft/year", func(c *gin.Context) { s.getTopAircraftTypes(c, "year", "aircraft") })
+			stats.GET("/types/aircraft/month", func(c *gin.Context) { s.getTopAircraftTypes(c, "month", "aircraft") })
+			stats.GET("/types/aircraft/day", func(c *gin.Context) { s.getTopAircraftTypes(c, "day", "aircraft") })
 
 			stats.GET("/charts/flights/year", func(c *gin.Context) { s.getChartFlightsOverTime(c, "year") })
 			stats.GET("/charts/flights/month", func(c *gin.Context) { s.getChartFlightsOverTime(c, "month") })
@@ -619,19 +624,32 @@ func (s *APIServer) getLowestAircraft(c *gin.Context) {
 	c.JSON(http.StatusOK, aircraft)
 }
 
-func (s *APIServer) getTopAircraftTypes(c *gin.Context, period string) {
+func (s *APIServer) getTopAircraftTypes(c *gin.Context, period string, flightoraircraft string) {
 	var query string
 	var timeFilter string
+	var innerFilter string
+	var innerQuery string
 
 	switch period {
 	case "year":
-		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 year'`
+		timeFilter = `age(now(), first_seen) <= INTERVAL '1 year' AND`
 	case "month":
-		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 month'`
+		timeFilter = `age(now(), first_seen) <= INTERVAL '1 month' AND`
 	case "day":
-		timeFilter = `WHERE age(now(), first_seen) <= INTERVAL '1 day'`
+		timeFilter = `age(now(), first_seen) <= INTERVAL '1 day' AND`
 	default:
 		timeFilter = ""
+	}
+	innerFilter = `WHERE ` + timeFilter + ` t IS NOT NULL AND t != ''`
+
+	switch flightoraircraft {
+	case "aircraft":
+		innerQuery = `(SELECT t, hex FROM aircraft_data ` + innerFilter + `GROUP BY t, hex)`
+	case "flights":
+		innerQuery = `aircraft_data ` + innerFilter
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid flightoraircraft parameter. Use 'flights' or 'aircraft'"})
+		return
 	}
 
 	query = `SELECT
@@ -640,14 +658,13 @@ func (s *APIServer) getTopAircraftTypes(c *gin.Context, period string) {
 					ROUND(count * 100.0 / SUM(count) OVER(), 0) as percentage
 				FROM (
 					SELECT t, Count(t) as count
-					FROM aircraft_data
-					` + timeFilter + `
-					GROUP BY t
-					ORDER BY Count(t) DESC
+					FROM ` + innerQuery + `
+					GROUP BY t ORDER BY count DESC
 					LIMIT 10
 				) top_10
 				ORDER BY count DESC`
 
+	fmt.Printf("Executing query: %s\n", query)
 	rows, err := s.pg.db.Query(context.Background(), query)
 
 	if err != nil {
