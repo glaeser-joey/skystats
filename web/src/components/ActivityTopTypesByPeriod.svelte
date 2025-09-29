@@ -12,7 +12,7 @@
       <div class="tabs tabs-box">
         <input
           type="radio"
-          name="activity_tabs"
+          name="activity_tabs_{aircraftorflight}_types"
           class="tab"
           aria-label="24hrs"
           bind:group={selectedTab}
@@ -21,7 +21,7 @@
         />
         <input
           type="radio"
-          name="activity_tabs"
+          name="activity_tabs_{aircraftorflight}_types"
           class="tab"
           aria-label="Month"
           bind:group={selectedTab}
@@ -29,7 +29,7 @@
         />
         <input
           type="radio"
-          name="activity_tabs"
+          name="activity_tabs_{aircraftorflight}_types"
           class="tab"
           aria-label="Year"
           bind:group={selectedTab}
