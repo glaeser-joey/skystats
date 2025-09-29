@@ -1,8 +1,8 @@
 <script>
-    import TypesByPeriod from './charts/TypesByPeriod.svelte';
+    import AircraftByPeriod from './charts/AircraftByPeriod.svelte';
     export let aircraftorflight = 'flights';
     let selectedTab = 0;
-    let title = aircraftorflight === 'flights' ? 'Flights Seen' : 'Unique Aircraft Seen';
+    let title = aircraftorflight === 'flights' ? 'Aircraft Type (flight count)' : 'Aircraft Type (unique aircraft)';
 </script>
 
 <div class="bg-base-100 rounded-box shadow-md pt-6 p-8">
@@ -46,13 +46,13 @@
     </div>
     </div>
       {#if selectedTab === 0}
-          <TypesByPeriod period="day" aircraftorflight={aircraftorflight}/>
+          <AircraftByPeriod period="day" type={aircraftorflight}/>
       {:else if selectedTab === 1}
-          <TypesByPeriod period="month" aircraftorflight={aircraftorflight}/>
+          <AircraftByPeriod period="month" type={aircraftorflight}/>
       {:else if selectedTab === 2}
-          <TypesByPeriod period="year" aircraftorflight={aircraftorflight}/>
+          <AircraftByPeriod period="year" type={aircraftorflight}/>
       {:else if selectedTab === 3}
-          <TypesByPeriod period="all" aircraftorflight={aircraftorflight}/>
+          <AircraftByPeriod period="all" type={aircraftorflight}/>
       {/if}
   </div>
 </div>
