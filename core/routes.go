@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/tomcarman/skystats/data"
 )
 
 func getDistanceBetweenAirports(origin []float64, destination []float64) *float64 {
@@ -26,236 +28,16 @@ func updateRoutes(pg *postgres) {
 
 	existing, new := checkRouteExists(pg, aircrafts)
 
-	if len(new) > 50 {
-		new = new[:50]
-	}
-
-	var routes []RouteInfo
-
-	for _, aircraft := range new {
-
-		route, err := getRoute(aircraft)
-
-		if err != nil {
-			fmt.Println("Error getting route: ", err)
-			continue
-		}
-
-		if route.Response.Flightroute.Callsign == "" {
-			existing = append(existing, aircraft)
-			continue
-		}
-
-		routes = append(routes, *route)
-		existing = append(existing, aircraft)
-
+	routes, err := getRoutes(new)
+	if err != nil {
+		fmt.Println("Error getting routes: ", err)
+		return
 	}
 
 	insertRoutes(pg, routes)
 
+	existing = append(existing, new...)
 	MarkProcessed(pg, "route_processed", existing)
-
-}
-
-func insertRoutes(pg *postgres, routes []RouteInfo) {
-
-	batch := &pgx.Batch{}
-
-	last_updated := time.Now().UTC().Format("2006-01-02 15:04:05-07")
-
-	for _, route := range routes {
-
-		var distance *float64
-		if route.Response.Flightroute.Origin.IcaoCode != "" &&
-			route.Response.Flightroute.Destination.IcaoCode != "" {
-			distance = getDistanceBetweenAirports([]float64{route.Response.Flightroute.Origin.Longitude,
-				route.Response.Flightroute.Origin.Latitude},
-				[]float64{route.Response.Flightroute.Destination.Longitude,
-					route.Response.Flightroute.Destination.Latitude})
-		}
-
-		insertStatement := `
-			INSERT INTO route_data (
-				route_callsign,
-				route_callsign_icao,
-				route_callsign_iata,
-				airline_name,
-				airline_icao,
-				airline_iata,
-				airline_country,
-				airline_country_iso,
-				airline_callsign,
-				origin_country_iso_name,
-				origin_country_name,
-				origin_elevation,
-				origin_iata_code,
-				origin_icao_code,
-				origin_latitude,
-				origin_longitude,
-				origin_municipality,
-				origin_name,
-				destination_country_iso_name,
-				destination_country_name,
-				destination_elevation,
-				destination_iata_code,
-				destination_icao_code,
-				destination_latitude,
-				destination_longitude,
-				destination_municipality,
-				destination_name,
-				last_updated,
-				route_distance)
-			VALUES ( 
-				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-				$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
-			ON CONFLICT (route_callsign)
-			DO UPDATE SET
-				route_callsign = EXCLUDED.route_callsign,
-				route_callsign_icao = EXCLUDED.route_callsign_icao,
-				route_callsign_iata = EXCLUDED.route_callsign_iata,
-				airline_name = EXCLUDED.airline_name,
-				airline_icao = EXCLUDED.airline_icao,
-				airline_iata = EXCLUDED.airline_iata,
-				airline_country = EXCLUDED.airline_country,
-				airline_country_iso = EXCLUDED.airline_country_iso,
-				airline_callsign = EXCLUDED.airline_callsign,
-				origin_country_iso_name = EXCLUDED.origin_country_iso_name,
-				origin_country_name = EXCLUDED.origin_country_name,
-				origin_elevation = EXCLUDED.origin_elevation,
-				origin_iata_code = EXCLUDED.origin_iata_code,
-				origin_icao_code = EXCLUDED.origin_icao_code,
-				origin_latitude = EXCLUDED.origin_latitude,
-				origin_longitude = EXCLUDED.origin_longitude,
-				origin_municipality = EXCLUDED.origin_municipality,
-				origin_name = EXCLUDED.origin_name,
-				destination_country_iso_name = EXCLUDED.destination_country_iso_name,
-				destination_country_name = EXCLUDED.destination_country_name,
-				destination_elevation = EXCLUDED.destination_elevation,
-				destination_iata_code = EXCLUDED.destination_iata_code,
-				destination_icao_code = EXCLUDED.destination_icao_code,
-				destination_latitude = EXCLUDED.destination_latitude,
-				destination_longitude = EXCLUDED.destination_longitude,
-				destination_municipality = EXCLUDED.destination_municipality,
-				destination_name = EXCLUDED.destination_name,
-				last_updated = EXCLUDED.last_updated,
-				route_distance = EXCLUDED.route_distance`
-
-		batch.Queue(insertStatement,
-			route.Response.Flightroute.Callsign,
-			route.Response.Flightroute.CallsignIcao,
-			route.Response.Flightroute.CallsignIata,
-			route.Response.Flightroute.Airline.Name,
-			route.Response.Flightroute.Airline.Icao,
-			route.Response.Flightroute.Airline.Iata,
-			route.Response.Flightroute.Airline.Country,
-			route.Response.Flightroute.Airline.CountryIso,
-			route.Response.Flightroute.Airline.Callsign,
-			route.Response.Flightroute.Origin.CountryIsoName,
-			route.Response.Flightroute.Origin.CountryName,
-			route.Response.Flightroute.Origin.Elevation,
-			route.Response.Flightroute.Origin.IataCode,
-			route.Response.Flightroute.Origin.IcaoCode,
-			route.Response.Flightroute.Origin.Latitude,
-			route.Response.Flightroute.Origin.Longitude,
-			route.Response.Flightroute.Origin.Municipality,
-			route.Response.Flightroute.Origin.Name,
-			route.Response.Flightroute.Destination.CountryIsoName,
-			route.Response.Flightroute.Destination.CountryName,
-			route.Response.Flightroute.Destination.Elevation,
-			route.Response.Flightroute.Destination.IataCode,
-			route.Response.Flightroute.Destination.IcaoCode,
-			route.Response.Flightroute.Destination.Latitude,
-			route.Response.Flightroute.Destination.Longitude,
-			route.Response.Flightroute.Destination.Municipality,
-			route.Response.Flightroute.Destination.Name,
-			last_updated,
-			distance)
-	}
-
-	br := pg.db.SendBatch(context.Background(), batch)
-	defer br.Close()
-
-	for range routes {
-		_, err := br.Exec()
-		if err != nil {
-			fmt.Println("insertRoutes() - Unable to insert data: ", err)
-		}
-	}
-
-}
-
-func getRoute(aircraft Aircraft) (*RouteInfo, error) {
-
-	url := "https://api.adsbdb.com/v0/callsign/"
-	url += aircraft.Flight
-
-	response, err := http.Get(url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := io.ReadAll(response.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var routeResponse RouteInfo
-	json.Unmarshal(data, &routeResponse)
-
-	return &routeResponse, nil
-
-}
-
-func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Aircraft, new []Aircraft) {
-
-	var callsignValues []string
-	for _, a := range aircraftToProcess {
-		callsignValues = append(callsignValues, a.Flight)
-	}
-
-	existingRoutes := make(map[string]*Aircraft)
-
-	query := `
-		SELECT id, route_callsign
-		FROM route_data
-		WHERE route_callsign = ANY($1::text[])
-		  AND last_updated IS NOT NULL
-		  AND last_updated > NOW() - INTERVAL '1 month'`
-
-	rows, err := pg.db.Query(context.Background(), query, callsignValues)
-
-	if err != nil {
-		fmt.Println("checkRouteExists() - Error querying db: ", err)
-		return nil, nil
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var route Aircraft
-		err := rows.Scan(
-			&route.Id,
-			&route.Flight,
-		)
-
-		if err != nil {
-			fmt.Println("checkRouteExists() - Error scanning rows: ", err)
-			continue
-		}
-
-		existingRoutes[route.Flight] = &route
-	}
-
-	for _, a := range aircraftToProcess {
-		if _, ok := existingRoutes[a.Flight]; ok {
-			existing = append(existing, a)
-		} else {
-			new = append(new, a)
-		}
-	}
-
-	return existing, new
 
 }
 
@@ -299,4 +81,263 @@ func unprocessedRoutes(pg *postgres) []Aircraft {
 
 	fmt.Println("Aircrafts that have not have routes processed: ", len(aircrafts))
 	return aircrafts
+}
+
+func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Aircraft, new []Aircraft) {
+
+	var callsignValues []string
+	for _, a := range aircraftToProcess {
+		callsignValues = append(callsignValues, a.Flight)
+	}
+
+	existingRoutes := make(map[string]*Aircraft)
+
+	query := `
+		SELECT id, route_callsign
+		FROM route_data
+		WHERE route_callsign = ANY($1::text[])
+		  AND last_updated IS NOT NULL
+		  AND last_updated > NOW() - INTERVAL '1 hour'`
+
+	rows, err := pg.db.Query(context.Background(), query, callsignValues)
+
+	if err != nil {
+		fmt.Println("checkRouteExists() - Error querying db: ", err)
+		return nil, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var route Aircraft
+		err := rows.Scan(
+			&route.Id,
+			&route.Flight,
+		)
+
+		if err != nil {
+			fmt.Println("checkRouteExists() - Error scanning rows: ", err)
+			continue
+		}
+
+		existingRoutes[route.Flight] = &route
+	}
+
+	for _, a := range aircraftToProcess {
+		if _, ok := existingRoutes[a.Flight]; ok {
+			existing = append(existing, a)
+		} else {
+			new = append(new, a)
+		}
+	}
+
+	return existing, new
+
+}
+
+func getRoutes(aircrafts []Aircraft) ([]RouteInfo, error) {
+
+	fmt.Println("Getting routes for aircrafts: ", len(aircrafts))
+
+	requestBodyData := buildRouteApiRequestBody(aircrafts)
+	requestBodyJson, err := json.Marshal(requestBodyData)
+
+	fmt.Println("Route API request body: ", string(requestBodyJson))
+
+	if err != nil {
+		return nil, err
+	}
+
+	url := "https://adsb.im/api/0/routeset"
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(requestBodyJson))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", fmt.Sprintf("Skystats/%s", version))
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Route API response status: ", resp.Status)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Route API response body: ", string(body))
+
+	var routes []RouteInfo
+	err = json.Unmarshal(body, &routes)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("Routes: %+v\n", routes)
+
+	return routes, nil
+}
+
+func insertRoutes(pg *postgres, routes []RouteInfo) {
+
+	batch := &pgx.Batch{}
+	last_updated := time.Now().UTC().Format("2006-01-02 15:04:05-07")
+	countryLookup := CountryIsoToName()
+
+	for _, route := range routes {
+
+		// Skip callsigns that were not matched
+		if route.AirportCodesIata == "unknown" {
+			continue
+		}
+
+		// Skip any "unplausible" routes
+		if route.Plausible == false {
+			continue
+		}
+
+		// Skip any multihop routes - for now
+		if route.Airports == nil || len(route.Airports) != 2 {
+			continue
+		}
+
+		origin := route.Airports[0]
+		destination := route.Airports[1]
+
+		// Get country names from ISO codes
+		originCountry, _ := countryLookup.GetName(origin.CountryIso2)
+		destinationCountry, _ := countryLookup.GetName(destination.CountryIso2)
+
+		// Get airline info from code
+		airline, _ := data.LookupAirline(route.AirlineCode)
+
+		// Calculate distance between airports
+		var distance *float64
+		if origin.Lat != 0 && origin.Lon != 0 &&
+			destination.Lat != 0 && destination.Lon != 0 {
+			distance = getDistanceBetweenAirports([]float64{origin.Lon, origin.Lat}, []float64{destination.Lon, destination.Lat})
+		}
+
+		insertStatement := `
+			INSERT INTO route_data (
+				route_callsign,
+				route_callsign_icao,
+				airline_name,
+				airline_icao,
+				airline_iata,
+				origin_country_iso_name,
+				origin_country_name,
+				origin_elevation,
+				origin_iata_code,
+				origin_icao_code,
+				origin_latitude,
+				origin_longitude,
+				origin_municipality,
+				origin_name,
+				destination_country_iso_name,
+				destination_country_name,
+				destination_elevation,
+				destination_iata_code,
+				destination_icao_code,
+				destination_latitude,
+				destination_longitude,
+				destination_municipality,
+				destination_name,
+				last_updated,
+				route_distance)
+			VALUES ( 
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+				$16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+			ON CONFLICT (route_callsign)
+			DO UPDATE SET
+				route_callsign = EXCLUDED.route_callsign,
+				route_callsign_icao = EXCLUDED.route_callsign_icao,
+				airline_name = EXCLUDED.airline_name,
+				airline_icao = EXCLUDED.airline_icao,
+				airline_iata = EXCLUDED.airline_iata,
+				origin_country_iso_name = EXCLUDED.origin_country_iso_name,
+				origin_country_name = EXCLUDED.origin_country_name,
+				origin_elevation = EXCLUDED.origin_elevation,
+				origin_iata_code = EXCLUDED.origin_iata_code,
+				origin_icao_code = EXCLUDED.origin_icao_code,
+				origin_latitude = EXCLUDED.origin_latitude,
+				origin_longitude = EXCLUDED.origin_longitude,
+				origin_municipality = EXCLUDED.origin_municipality,
+				origin_name = EXCLUDED.origin_name,
+				destination_country_iso_name = EXCLUDED.destination_country_iso_name,
+				destination_country_name = EXCLUDED.destination_country_name,
+				destination_elevation = EXCLUDED.destination_elevation,
+				destination_iata_code = EXCLUDED.destination_iata_code,
+				destination_icao_code = EXCLUDED.destination_icao_code,
+				destination_latitude = EXCLUDED.destination_latitude,
+				destination_longitude = EXCLUDED.destination_longitude,
+				destination_municipality = EXCLUDED.destination_municipality,
+				destination_name = EXCLUDED.destination_name,
+				last_updated = EXCLUDED.last_updated,
+				route_distance = EXCLUDED.route_distance`
+
+		batch.Queue(insertStatement,
+			route.Callsign,
+			route.Callsign,
+			airline.Name,
+			route.AirlineCode,
+			airline.IATA,
+			origin.CountryIso2,
+			originCountry,
+			origin.AltFeet,
+			origin.Iata,
+			origin.Icao,
+			origin.Lat,
+			origin.Lon,
+			origin.Location,
+			origin.Name,
+			destination.CountryIso2,
+			destinationCountry,
+			destination.AltFeet,
+			destination.Iata,
+			destination.Icao,
+			destination.Lat,
+			destination.Lon,
+			destination.Location,
+			destination.Name,
+			last_updated,
+			distance)
+	}
+
+	br := pg.db.SendBatch(context.Background(), batch)
+	defer br.Close()
+
+	for range routes {
+		_, err := br.Exec()
+		if err != nil {
+			fmt.Println("insertRoutes() - Unable to insert data: ", err)
+		}
+	}
+
+}
+
+func buildRouteApiRequestBody(aircrafts []Aircraft) RouteAPIRequest {
+
+	aircraftsJson := make([]RouteAPIPlane, 0)
+
+	for _, aircraft := range aircrafts {
+		if aircraft.Flight != "" && aircraft.LastSeenLat.Valid && aircraft.LastSeenLon.Valid {
+			aircraftsJson = append(aircraftsJson, RouteAPIPlane{
+				Callsign: aircraft.Flight,
+				Lat:      aircraft.LastSeenLat.Float64,
+				Lng:      aircraft.LastSeenLon.Float64,
+			})
+		}
+	}
+	return RouteAPIRequest{Planes: aircraftsJson}
 }
