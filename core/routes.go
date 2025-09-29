@@ -44,7 +44,7 @@ func updateRoutes(pg *postgres) {
 func unprocessedRoutes(pg *postgres) []Aircraft {
 
 	query := `
-		SELECT id, flight
+		SELECT id, flight, last_seen_lat, last_seen_lon
 		FROM aircraft_data
 		WHERE 
 			hex != '' AND
@@ -69,6 +69,8 @@ func unprocessedRoutes(pg *postgres) []Aircraft {
 		err := rows.Scan(
 			&aircraft.Id,
 			&aircraft.Flight,
+			&aircraft.LastSeenLat,
+			&aircraft.LastSeenLon,
 		)
 
 		if err != nil {
@@ -136,12 +138,8 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 
 func getRoutes(aircrafts []Aircraft) ([]RouteInfo, error) {
 
-	fmt.Println("Getting routes for aircrafts: ", len(aircrafts))
-
 	requestBodyData := buildRouteApiRequestBody(aircrafts)
 	requestBodyJson, err := json.Marshal(requestBodyData)
-
-	fmt.Println("Route API request body: ", string(requestBodyJson))
 
 	if err != nil {
 		return nil, err
@@ -168,22 +166,16 @@ func getRoutes(aircrafts []Aircraft) ([]RouteInfo, error) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("Route API response status: ", resp.Status)
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Route API response body: ", string(body))
 
 	var routes []RouteInfo
 	err = json.Unmarshal(body, &routes)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Routes: %+v\n", routes)
 
 	return routes, nil
 }
