@@ -660,9 +660,8 @@ func (s *APIServer) getTopAircraftTypes(c *gin.Context, period string, flightora
 					SELECT t, Count(t) as count
 					FROM ` + innerQuery + `
 					GROUP BY t ORDER BY count DESC
-					LIMIT 10
 				) top_10
-				ORDER BY count DESC`
+				ORDER BY count DESC LIMIT 10`
 
 	fmt.Printf("Executing query: %s\n", query)
 	rows, err := s.pg.db.Query(context.Background(), query)
