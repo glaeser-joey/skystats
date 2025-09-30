@@ -13,6 +13,7 @@
     let interval = null;
     let selectedAircraft = null;
     let selectedAircraftHex = null;
+    let selectedAircraftImage = null;
     let imageLoading = false;
 
     async function fetchData() {
@@ -56,19 +57,19 @@
             const distance = parseFloat(aircraft.last_seen_distance);
             let idealSlot;
 
-            if (distance < 4) idealSlot = 0;
-            else if (distance < 8) idealSlot = 1;
-            else if (distance < 12) idealSlot = 2;
-            else if (distance < 16) idealSlot = 3;
-            else if (distance < 20) idealSlot = 4;
-            else return;
-
-            // if (distance < 20) idealSlot = 0;
-            // else if (distance < 80) idealSlot = 1;
-            // else if (distance < 120) idealSlot = 2;
-            // else if (distance < 160) idealSlot = 3;
-            // else if (distance < 200) idealSlot = 4;
+            // if (distance < 4) idealSlot = 0;
+            // else if (distance < 8) idealSlot = 1;
+            // else if (distance < 12) idealSlot = 2;
+            // else if (distance < 16) idealSlot = 3;
+            // else if (distance < 20) idealSlot = 4;
             // else return;
+
+            if (distance < 20) idealSlot = 0;
+            else if (distance < 80) idealSlot = 1;
+            else if (distance < 120) idealSlot = 2;
+            else if (distance < 160) idealSlot = 3;
+            else if (distance < 200) idealSlot = 4;
+            else return;
 
             let placed = false;
 
@@ -135,6 +136,32 @@
         };
     }
 
+    async function getImage(aircraft) {
+        if (!aircraft?.hex) {
+            return null;
+        }
+
+        try {
+            const response = await fetch(`https://api.planespotters.net/pub/photos/hex/${aircraft.hex}`);
+            if (!response.ok) {
+                return null;
+            }
+
+            const result = await response.json();
+            const photo = result.photos?.[0];
+
+            return {
+                url_photo: photo?.thumbnail_large.src,
+                url_photo_photographer: photo?.photographer,
+                url_photo_link: photo?.link
+            }
+
+        } catch (err) {
+            console.error("Error fetching image:", err);
+            return null;
+        }
+    }
+
     $: if (selectedAircraftHex && data.length > 0) {
         const updatedAircraft = data.find(a => a.hex === selectedAircraftHex);
         if (updatedAircraft) {
@@ -142,19 +169,26 @@
         }
     }
 
-    function showAircraftModal(aircraft) {
+    async function showAircraftModal(aircraft) {
         selectedAircraftHex = aircraft.hex;
         selectedAircraft = calculateProgress(aircraft);
+        selectedAircraftImage = null;
         imageLoading = true;
-        
+
         // @ts-ignore
-        document.getElementById("aircraft-modal").showModal()
-        
+        document.getElementById("aircraft-modal").showModal();
+
+        const imageData = await getImage(aircraft);
+        selectedAircraftImage = imageData;
+        imageLoading = false;
     }
+
+
 
     function closeModal() {
         selectedAircraft = null;
         selectedAircraftHex = null;
+        selectedAircraftImage = null;
     }
 </script>
 
@@ -327,19 +361,15 @@
             <div class="grid grid-cols-1 md:grid-cols-2 mt-6 gap-6">
                 <!--image-->
                 <div class="mr-8">
-                    {#if selectedAircraft.url_photo}
-                        {#if imageLoading}
-                            <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
-                        {/if}
-                        <img 
-                            src={selectedAircraft.url_photo} 
-                            alt="{selectedAircraft.registration}" 
-                            class="w-full max-w-sm h-auto rounded-lg {imageLoading ? 'hidden' : ''}"
-                            on:load={() => imageLoading = false}
-                            on:error={() => imageLoading = false}
+                    {#if imageLoading}
+                        <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
+                    {:else if selectedAircraftImage?.url_photo}
+                        <img
+                            src={selectedAircraftImage.url_photo}
+                            alt="{selectedAircraft.registration}"
+                            class="w-full max-w-sm h-auto rounded-lg"
                         />
-                    {/if}
-                    {#if !selectedAircraft.url_photo}
+                    {:else}
                         <div class="bg-base-200 w-full max-w-sm aspect-[3/2] flex items-center justify-center rounded-lg">
                             <p class="text-center text-sm text-gray-500">No photo available</p>
                         </div>
