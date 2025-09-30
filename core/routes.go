@@ -26,6 +26,10 @@ func updateRoutes(pg *postgres) {
 		return
 	}
 
+	if len(aircrafts) > 100 {
+		aircrafts = aircrafts[:100]
+	}
+
 	existing, new := checkRouteExists(pg, aircrafts)
 
 	routes, err := getRoutes(new)
@@ -157,7 +161,7 @@ func getRoutes(aircrafts []Aircraft) ([]RouteInfo, error) {
 	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 
 	resp, err := client.Do(req)
@@ -199,7 +203,7 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 			continue
 		}
 
-		// Skip any multihop routes - for now
+		// Skip any empty or multihop routes - for now
 		if route.Airports == nil || len(route.Airports) != 2 {
 			continue
 		}
