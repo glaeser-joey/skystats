@@ -8,27 +8,27 @@
       <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-extralight tracking-wider ">Aircraft Seen</h2>
       <div class="tabs tabs-box">
-        <input 
-          type="radio" 
-          name="activity_tabs" 
-          class="tab" 
+        <input
+          type="radio"
+          name="activity_tabs_aircraft"
+          class="tab"
           aria-label="24hrs"
           bind:group={selectedTab}
           value={0}
           checked
         />
-        <input 
-          type="radio" 
-          name="activity_tabs" 
-          class="tab" 
+        <input
+          type="radio"
+          name="activity_tabs_aircraft"
+          class="tab"
           aria-label="Month"
           bind:group={selectedTab}
           value={1}
         />
-        <input 
-          type="radio" 
-          name="activity_tabs" 
-          class="tab" 
+        <input
+          type="radio"
+          name="activity_tabs_aircraft"
+          class="tab"
           aria-label="Year"
           bind:group={selectedTab}
           value={2}
