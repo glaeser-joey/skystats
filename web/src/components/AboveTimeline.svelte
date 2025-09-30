@@ -13,7 +13,7 @@
     let interval = null;
     let selectedAircraft = null;
     let selectedAircraftHex = null;
-    let imageLoading = false;
+    let selectedAircraftImage = null;
 
     async function fetchData() {
         try {
@@ -135,26 +135,56 @@
         };
     }
 
+    async function getImage(aircraft) {
+        if (!aircraft?.hex) {
+            return null;
+        }
+
+        try {
+            const response = await fetch(`https://api.planespotters.net/pub/photos/hex/${aircraft.hex}`);
+            if (!response.ok) {
+                return null;
+            }
+
+            const result = await response.json();
+            const photo = result.photos?.[0];
+
+            return {
+                url_photo: photo?.thumbnail_large.src,
+                url_photo_photographer: photo?.photographer,
+                url_photo_link: photo?.link
+            }
+
+        } catch (err) {
+            console.error("Error fetching image:", err);
+            return null;
+        }
+    }
+
     $: if (selectedAircraftHex && data.length > 0) {
         const updatedAircraft = data.find(a => a.hex === selectedAircraftHex);
         if (updatedAircraft) {
             selectedAircraft = calculateProgress(updatedAircraft);
-        }
+        }   
     }
 
-    function showAircraftModal(aircraft) {
+    async function showAircraftModal(aircraft) {
         selectedAircraftHex = aircraft.hex;
         selectedAircraft = calculateProgress(aircraft);
-        imageLoading = true;
-        
+
+        const imageData = await getImage(aircraft);
+        selectedAircraftImage = imageData;
+
         // @ts-ignore
-        document.getElementById("aircraft-modal").showModal()
-        
+        document.getElementById("aircraft-modal").showModal();
     }
+
+
 
     function closeModal() {
         selectedAircraft = null;
         selectedAircraftHex = null;
+        selectedAircraftImage = null;
     }
 </script>
 
@@ -327,19 +357,22 @@
             <div class="grid grid-cols-1 md:grid-cols-2 mt-6 gap-6">
                 <!--image-->
                 <div class="mr-8">
-                    {#if selectedAircraft.url_photo}
-                        {#if imageLoading}
-                            <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
-                        {/if}
-                        <img 
-                            src={selectedAircraft.url_photo} 
-                            alt="{selectedAircraft.registration}" 
-                            class="w-full max-w-sm h-auto rounded-lg {imageLoading ? 'hidden' : ''}"
-                            on:load={() => imageLoading = false}
-                            on:error={() => imageLoading = false}
-                        />
-                    {/if}
-                    {#if !selectedAircraft.url_photo}
+                    {#if selectedAircraftImage?.url_photo}
+                        <div class="relative w-full max-w-sm">
+                            <a href={selectedAircraftImage.url_photo_link} target="_blank" rel="noopener noreferrer">
+                                <img
+                                    src={selectedAircraftImage.url_photo}
+                                    alt="{selectedAircraft.registration}"
+                                    class="w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                />
+                            </a>
+                            {#if selectedAircraftImage.url_photo_photographer}
+                                <div class="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                    © {selectedAircraftImage.url_photo_photographer}
+                                </div>
+                            {/if}
+                        </div>
+                    {:else}
                         <div class="bg-base-200 w-full max-w-sm aspect-[3/2] flex items-center justify-center rounded-lg">
                             <p class="text-center text-sm text-gray-500">No photo available</p>
                         </div>
