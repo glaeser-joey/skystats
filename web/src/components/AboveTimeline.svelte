@@ -14,7 +14,6 @@
     let selectedAircraft = null;
     let selectedAircraftHex = null;
     let selectedAircraftImage = null;
-    let imageLoading = false;
 
     async function fetchData() {
         try {
@@ -166,21 +165,18 @@
         const updatedAircraft = data.find(a => a.hex === selectedAircraftHex);
         if (updatedAircraft) {
             selectedAircraft = calculateProgress(updatedAircraft);
-        }
+        }   
     }
 
     async function showAircraftModal(aircraft) {
         selectedAircraftHex = aircraft.hex;
         selectedAircraft = calculateProgress(aircraft);
-        selectedAircraftImage = null;
-        imageLoading = true;
-
-        // @ts-ignore
-        document.getElementById("aircraft-modal").showModal();
 
         const imageData = await getImage(aircraft);
         selectedAircraftImage = imageData;
-        imageLoading = false;
+
+        // @ts-ignore
+        document.getElementById("aircraft-modal").showModal();
     }
 
 
@@ -361,9 +357,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 mt-6 gap-6">
                 <!--image-->
                 <div class="mr-8">
-                    {#if imageLoading}
-                        <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
-                    {:else if selectedAircraftImage?.url_photo}
+                    {#if selectedAircraftImage?.url_photo}
                         <img
                             src={selectedAircraftImage.url_photo}
                             alt="{selectedAircraft.registration}"
