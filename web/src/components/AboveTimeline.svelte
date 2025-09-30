@@ -56,19 +56,19 @@
             const distance = parseFloat(aircraft.last_seen_distance);
             let idealSlot;
 
-            // if (distance < 4) idealSlot = 0;
-            // else if (distance < 8) idealSlot = 1;
-            // else if (distance < 12) idealSlot = 2;
-            // else if (distance < 16) idealSlot = 3;
-            // else if (distance < 20) idealSlot = 4;
-            // else return;
-
-            if (distance < 20) idealSlot = 0;
-            else if (distance < 80) idealSlot = 1;
-            else if (distance < 120) idealSlot = 2;
-            else if (distance < 160) idealSlot = 3;
-            else if (distance < 200) idealSlot = 4;
+            if (distance < 4) idealSlot = 0;
+            else if (distance < 8) idealSlot = 1;
+            else if (distance < 12) idealSlot = 2;
+            else if (distance < 16) idealSlot = 3;
+            else if (distance < 20) idealSlot = 4;
             else return;
+
+            // if (distance < 20) idealSlot = 0;
+            // else if (distance < 80) idealSlot = 1;
+            // else if (distance < 120) idealSlot = 2;
+            // else if (distance < 160) idealSlot = 3;
+            // else if (distance < 200) idealSlot = 4;
+            // else return;
 
             let placed = false;
 
@@ -358,11 +358,20 @@
                 <!--image-->
                 <div class="mr-8">
                     {#if selectedAircraftImage?.url_photo}
-                        <img
-                            src={selectedAircraftImage.url_photo}
-                            alt="{selectedAircraft.registration}"
-                            class="w-full max-w-sm h-auto rounded-lg"
-                        />
+                        <div class="relative w-full max-w-sm">
+                            <a href={selectedAircraftImage.url_photo_link} target="_blank" rel="noopener noreferrer">
+                                <img
+                                    src={selectedAircraftImage.url_photo}
+                                    alt="{selectedAircraft.registration}"
+                                    class="w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                />
+                            </a>
+                            {#if selectedAircraftImage.url_photo_photographer}
+                                <div class="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                    © {selectedAircraftImage.url_photo_photographer}
+                                </div>
+                            {/if}
+                        </div>
                     {:else}
                         <div class="bg-base-200 w-full max-w-sm aspect-[3/2] flex items-center justify-center rounded-lg">
                             <p class="text-center text-sm text-gray-500">No photo available</p>
