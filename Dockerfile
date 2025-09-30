@@ -3,6 +3,7 @@ FROM golang:1.23-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum /app
 COPY core /app/core
+COPY data /app/data
 RUN go mod download
 ARG VERSION=dev
 ARG COMMIT=none
