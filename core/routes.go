@@ -185,6 +185,7 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 	batch := &pgx.Batch{}
 	last_updated := time.Now().UTC().Format("2006-01-02 15:04:05-07")
 	countryLookup := CountryIsoToName()
+	queuedCount := 0
 
 	for _, route := range routes {
 
@@ -247,7 +248,7 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 				destination_name,
 				last_updated,
 				route_distance)
-			VALUES ( 
+			VALUES (
 				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
 				$16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
 			ON CONFLICT (route_callsign)
@@ -304,12 +305,13 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 			destination.Name,
 			last_updated,
 			distance)
+		queuedCount++
 	}
 
 	br := pg.db.SendBatch(context.Background(), batch)
 	defer br.Close()
 
-	for range routes {
+	for i := 0; i < queuedCount; i++ {
 		_, err := br.Exec()
 		if err != nil {
 			fmt.Println("insertRoutes() - Unable to insert data: ", err)
