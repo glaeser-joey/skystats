@@ -126,43 +126,33 @@ type RegistrationInfo struct {
 }
 
 type RouteInfo struct {
-	Response struct {
-		Flightroute struct {
-			Callsign     string `json:"callsign"`
-			CallsignIcao string `json:"callsign_icao"`
-			CallsignIata string `json:"callsign_iata"`
-			Airline      struct {
-				Name       string `json:"name"`
-				Icao       string `json:"icao"`
-				Iata       string `json:"iata"`
-				Country    string `json:"country"`
-				CountryIso string `json:"country_iso"`
-				Callsign   string `json:"callsign"`
-			} `json:"airline"`
-			Origin struct {
-				CountryIsoName string  `json:"country_iso_name"`
-				CountryName    string  `json:"country_name"`
-				Elevation      int     `json:"elevation"`
-				IataCode       string  `json:"iata_code"`
-				IcaoCode       string  `json:"icao_code"`
-				Latitude       float64 `json:"latitude"`
-				Longitude      float64 `json:"longitude"`
-				Municipality   string  `json:"municipality"`
-				Name           string  `json:"name"`
-			} `json:"origin"`
-			Destination struct {
-				CountryIsoName string  `json:"country_iso_name"`
-				CountryName    string  `json:"country_name"`
-				Elevation      int     `json:"elevation"`
-				IataCode       string  `json:"iata_code"`
-				IcaoCode       string  `json:"icao_code"`
-				Latitude       float64 `json:"latitude"`
-				Longitude      float64 `json:"longitude"`
-				Municipality   string  `json:"municipality"`
-				Name           string  `json:"name"`
-			} `json:"destination"`
-		} `json:"flightroute"`
-	} `json:"response"`
+	AirportCodesIata string `json:"_airport_codes_iata"`
+	Airports         []struct {
+		AltFeet     float64 `json:"alt_feet"`
+		AltMeters   float64 `json:"alt_meters"`
+		CountryIso2 string  `json:"countryiso2"`
+		Iata        string  `json:"iata"`
+		Icao        string  `json:"icao"`
+		Lat         float64 `json:"lat"`
+		Location    string  `json:"location"`
+		Lon         float64 `json:"lon"`
+		Name        string  `json:"name"`
+	} `json:"_airports"`
+	AirlineCode  string `json:"airline_code"`
+	AirportCodes string `json:"airport_codes"`
+	Callsign     string `json:"callsign"`
+	Number       string `json:"number"`
+	Plausible    bool   `json:"plausible"`
+}
+
+type RouteAPIPlane struct {
+	Callsign string  `json:"callsign"`
+	Lat      float64 `json:"lat"`
+	Lng      float64 `json:"lng"`
+}
+
+type RouteAPIRequest struct {
+	Planes []RouteAPIPlane `json:"planes"`
 }
 
 type ChartPoint struct {
