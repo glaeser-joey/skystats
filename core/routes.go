@@ -149,7 +149,7 @@ func getRoutes(aircrafts []Aircraft) ([]RouteInfo, error) {
 		return nil, err
 	}
 
-	url := "https://adsb.im/api/0/routeset"
+	url := "http://adsb.im/api/0/routeset"
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(requestBodyJson))
 	if err != nil {
